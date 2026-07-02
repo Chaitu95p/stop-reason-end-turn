@@ -1,0 +1,35 @@
+{
+  "_comment_step_9": [
+    "PROJECT-scoped MCP servers. Committed to the repo so every team member",
+    "gets the same tools. Credentials use ${VAR} expansion -- resolved from",
+    "the shell environment at server-launch time, NEVER stored in git.",
+    "",
+    "PERSONAL experimental servers go in ~/.claude.json (NOT this file).",
+    "Both files are merged at session start -- servers from ~/.claude.json",
+    "are available alongside these. If a name collides, project scope wins.",
+    "",
+    "EXAM: env-var expansion prevents credentials in git; ~/.claude.json",
+    "gives individuals experimental tools without affecting teammates."
+  ],
+
+  "mcpServers": {
+    "postgres-readonly": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres",
+               "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}?sslmode=require"],
+      "env": {
+        "PGCONNECT_TIMEOUT": "5"
+      }
+    },
+
+    "internal-search": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "team_mcp.search"],
+      "env": {
+        "SEARCH_API_KEY":      "${INTERNAL_SEARCH_KEY}",
+        "SEARCH_BASE_URL":     "${INTERNAL_SEARCH_URL}",
+        "SEARCH_INDEX":        "prod-docs-v3"
+      }
+    }
+  }
+}
