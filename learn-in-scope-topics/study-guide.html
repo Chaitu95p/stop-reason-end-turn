@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CCA-F In-Scope Topics — Study Guide</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --fg: #2d2a26;
+    --muted: #6b6862;
+    --accent: #b8420f;
+    --accent-soft: #f4e3d7;
+    --code-bg: #f0ede7;
+    --border: #d9d5cc;
+    --warn: #a03030;
+    --good: #2d7a3a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+  }
+  header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+  }
+  h1 { margin: 0 0 0.5rem 0; color: var(--accent); font-size: 2rem; }
+  h2 { color: var(--accent); margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+  h3 { color: var(--fg); margin-top: 1.5rem; }
+  h4 { margin-bottom: 0.3rem; color: var(--muted); text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.05em; }
+  nav.toc {
+    background: var(--accent-soft);
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    margin-bottom: 2rem;
+  }
+  nav.toc h3 { margin-top: 0; }
+  nav.toc ol { margin: 0.5rem 0; padding-left: 1.5rem; }
+  nav.toc li { margin: 0.2rem 0; }
+  nav.toc a { color: var(--accent); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+  details.topic {
+    background: white;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+    padding: 0.75rem 1.25rem;
+    margin: 1rem 0;
+  }
+  details.topic[open] { padding-bottom: 1.5rem; }
+  summary {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--accent);
+    padding: 0.25rem 0;
+  }
+  summary:hover { color: var(--fg); }
+  .domain-tag {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-family: monospace;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+  code, pre {
+    font-family: 'Menlo', 'Consolas', monospace;
+    font-size: 0.9rem;
+  }
+  code { background: var(--code-bg); padding: 0.1rem 0.35rem; border-radius: 3px; }
+  pre {
+    background: var(--code-bg);
+    padding: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    border-left: 3px solid var(--muted);
+  }
+  pre code { background: none; padding: 0; }
+  .mnemonic {
+    background: var(--accent-soft);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin: 0.75rem 0;
+    font-family: monospace;
+  }
+  .mnemonic strong { color: var(--accent); }
+  .warn, .good {
+    padding: 0.5rem 0.9rem;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+  }
+  .warn { background: #fbe9e9; border-left: 3px solid var(--warn); }
+  .good { background: #e7f4e9; border-left: 3px solid var(--good); }
+  .warn strong { color: var(--warn); }
+  .good strong { color: var(--good); }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+  }
+  th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+  th { background: var(--code-bg); font-weight: bold; }
+  .demo-link {
+    display: inline-block;
+    background: var(--code-bg);
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: var(--accent);
+    text-decoration: none;
+    margin: 0.15rem 0.3rem 0.15rem 0;
+    border: 1px solid var(--border);
+  }
+  .demo-link:hover { background: var(--accent-soft); }
+  footer { color: var(--muted); font-size: 0.85rem; text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  .btn-row { margin: 1rem 0; }
+  .btn-row button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    margin-right: 0.5rem;
+  }
+  .btn-row button:hover { background: #8a2f08; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>CCA-F In-Scope Topics — Study Guide</h1>
+  <p>All 18 topics from the Claude Certified Architect – Foundations exam guide (pages 35-36), unpacked with mnemonics, key facts, anti-patterns, and cross-links to runnable code.</p>
+</header>
+
+<div class="btn-row">
+  <button onclick="document.querySelectorAll('details.topic').forEach(d => d.open = true)">Expand all</button>
+  <button onclick="document.querySelectorAll('details.topic').forEach(d => d.open = false)">Collapse all</button>
+</div>
+
+<nav class="toc">
+  <h3>Table of contents</h3>
+  <ol>
+    <li><a href="#t1">Agentic loop implementation</a> <span class="domain-tag">D1</span></li>
+    <li><a href="#t2">Multi-agent orchestration</a> <span class="domain-tag">D1</span></li>
+    <li><a href="#t3">Subagent context management</a> <span class="domain-tag">D1</span></li>
+    <li><a href="#t4">Tool interface design</a> <span class="domain-tag">D2</span></li>
+    <li><a href="#t5">MCP tool and resource design</a> <span class="domain-tag">D2</span></li>
+    <li><a href="#t6">MCP server configuration</a> <span class="domain-tag">D2</span></li>
+    <li><a href="#t7">Error handling and propagation</a> <span class="domain-tag">D2</span></li>
+    <li><a href="#t8">Escalation decision-making</a> <span class="domain-tag">D2</span></li>
+    <li><a href="#t9">CLAUDE.md configuration</a> <span class="domain-tag">D3</span></li>
+    <li><a href="#t10">Custom commands and skills</a> <span class="domain-tag">D3</span></li>
+    <li><a href="#t11">Plan mode vs direct execution</a> <span class="domain-tag">D3</span></li>
+    <li><a href="#t12">Iterative refinement</a> <span class="domain-tag">D3</span></li>
+    <li><a href="#t13">Structured output via tool_use</a> <span class="domain-tag">D4</span></li>
+    <li><a href="#t14">Few-shot prompting</a> <span class="domain-tag">D4</span></li>
+    <li><a href="#t15">Batch processing</a> <span class="domain-tag">D4</span></li>
+    <li><a href="#t16">Context window optimization</a> <span class="domain-tag">D5</span></li>
+    <li><a href="#t17">Human review workflows</a> <span class="domain-tag">D5</span></li>
+    <li><a href="#t18">Information provenance</a> <span class="domain-tag">D5</span></li>
+  </ol>
+</nav>
+
+<h2>Domain 1 — Agentic Architecture &amp; Orchestration <small style="font-weight:normal; color:var(--muted)">(27%)</small></h2>
+
+<details class="topic" id="t1">
+  <summary>1. Agentic loop implementation <span class="domain-tag">D1</span></summary>
+
+  <h4>What it is</h4>
+  <p>The control-flow pattern that lets Claude repeatedly call tools until a task is complete. You inspect <code>response.stop_reason</code> on every response and decide whether to loop or terminate.</p>
+
+  <div class="mnemonic"><strong>STOP</strong> — <strong>S</strong>end request · <strong>T</strong>est stop_reason · <strong>O</strong>perate tools · <strong>P</strong>roceed (loop) or Terminate</div>
+
+  <h4>Key facts</h4>
+  <ul>
+    <li><code>stop_reason == "tool_use"</code> → execute all tool_use blocks, append tool_result blocks, loop.</li>
+    <li><code>stop_reason == "end_turn"</code> → task complete, extract final text.</li>
+    <li>Tool results are appended as <code>{"role": "user", "content": [{"type": "tool_result", "tool_use_id": ..., "content": ...}]}</code>.</li>
+    <li>Tool results MUST be in conversation history so the model reasons from them next turn.</li>
+  </ul>
+
+  <h4>Anti-patterns (all explicitly called out in the guide)</h4>
+  <div class="warn"><strong>Do NOT</strong> parse assistant text for words like "DONE" or "complete" to terminate the loop.</div>
+  <div class="warn"><strong>Do NOT</strong> use a fixed iteration cap as the PRIMARY stopping mechanism (a small safety cap is fine as a backstop).</div>
+  <div class="warn"><strong>Do NOT</strong> check for the presence of assistant text as a completion indicator — Claude may emit text mid-tool-use.</div>
+
+  <h4>Minimal correct pattern</h4>
+<pre><code>while True:
+    resp = client.messages.create(model="claude-sonnet-4-6", tools=TOOLS, messages=messages)
+    if resp.stop_reason == "end_turn":
+        return extract_text(resp)
+    if resp.stop_reason == "tool_use":
+        messages.append({"role": "assistant", "content": resp.content})
+        tool_results = execute_all_tool_uses(resp.content)
+        messages.append({"role": "user", "content": tool_results})</code></pre>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-1/01_agentic_loop.py">module-1/01_agentic_loop.py</a>
+</details>
+
+<details class="topic" id="t2">
+  <summary>2. Multi-agent orchestration <span class="domain-tag">D1</span></summary>
+
+  <h4>What it is</h4>
+  <p>Coordinator-subagent architecture: one coordinator agent decomposes a task, delegates to specialised subagents, aggregates their results, and decides whether more work is needed.</p>
+
+  <div class="mnemonic"><strong>HUB</strong> — <strong>H</strong>ub-and-spoke (all routing through coordinator) · <strong>U</strong>nique context per subagent · <strong>B</strong>readth check on decomposition</div>
+
+  <h4>Key facts</h4>
+  <ul>
+    <li>Hub-and-spoke: subagents don't talk to each other; the coordinator owns all inter-agent communication, error handling, and info routing.</li>
+    <li>Subagents operate with <strong>isolated context</strong> — they don't inherit the coordinator's history automatically.</li>
+    <li>The coordinator dynamically selects subagents based on query complexity — it doesn't always run the full pipeline.</li>
+    <li>Iterative refinement: coordinator evaluates synthesis output for gaps, re-delegates with targeted queries, re-invokes synthesis.</li>
+  </ul>
+
+  <h4>The exam trap</h4>
+  <div class="warn">If a multi-agent system produces incomplete output but every subagent "completed successfully," suspect <strong>overly narrow decomposition by the coordinator</strong>. Example from the guide: query "creative industries" gets decomposed into only "visual arts" subtasks; music, writing, and film are silently omitted. The subagents worked correctly within their assigned scope — the problem is the scope.</div>
+
+  <h4>Design principles</h4>
+  <ul>
+    <li>Partition scope across subagents to minimize duplication (distinct subtopics or source types per agent).</li>
+    <li>Route ALL subagent communication through the coordinator for observability and consistent error handling.</li>
+    <li>Loop refinement until coverage is sufficient — don't stop after one synthesis pass.</li>
+  </ul>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-1/02_multi_agent_hub_spoke.py">module-1/02_multi_agent_hub_spoke.py</a>
+  <a class="demo-link" href="../exercise-4-multi-agent-research/01_coordinator_parallel.py">exercise-4/01_coordinator_parallel.py</a>
+</details>
+
+<details class="topic" id="t3">
+  <summary>3. Subagent context management <span class="domain-tag">D1</span></summary>
+
+  <h4>What it is</h4>
+  <p>Managing the state that subagents need — explicitly passing context in, persisting state so subagents can recover from crashes, keeping subagent context isolated from the main conversation.</p>
+
+  <div class="mnemonic"><strong>PIC</strong> — <strong>P</strong>ass context explicitly · <strong>I</strong>solate per subagent · <strong>C</strong>rash-recover via manifest</div>
+
+  <h4>Key facts</h4>
+  <ul>
+    <li>Explicit context passing: everything the subagent needs must be in its invocation prompt.</li>
+    <li>Structured state persistence: write a manifest file recording completed steps.</li>
+    <li>Crash recovery: on restart, read the manifest and skip work that's already done.</li>
+    <li>Isolation prevents subagent output from polluting the main conversation context.</li>
+  </ul>
+
+  <h4>Manifest pattern</h4>
+<pre><code>{
+  "task_id": "research-2026-07-02",
+  "coordinator_state": {"phase": "synthesis", "gaps_found": []},
+  "subagent_results": {
+    "search_agent": {"status": "done", "findings_file": "findings.json"},
+    "analysis_agent": {"status": "in_progress", "started_at": "..."}
+  }
+}</code></pre>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-1/03_subagent_context.py">module-1/03_subagent_context.py</a>
+  <a class="demo-link" href="../module-5/04_state_persistence.py">module-5/04_state_persistence.py</a>
+</details>
+
+<h2>Domain 2 — Tool Design &amp; MCP Integration <small style="font-weight:normal; color:var(--muted)">(18%)</small></h2>
+
+<details class="topic" id="t4">
+  <summary>4. Tool interface design <span class="domain-tag">D2</span></summary>
+
+  <h4>What it is</h4>
+  <p>Designing the tool schema, description, and naming so Claude reliably picks the right tool for the right job.</p>
+
+  <div class="mnemonic"><strong>SLAT</strong> — <strong>S</strong>plit semantic operations · <strong>L</strong>imit tool count · <strong>A</strong>ction-name clearly · <strong>T</strong>ell what it returns</div>
+
+  <h4>Key facts</h4>
+  <ul>
+    <li>4-5 tools per agent, not 18. Too many tools measurably degrades selection reliability.</li>
+    <li>Agents given tools outside their specialisation misuse them (a synthesis agent shouldn't have web_search).</li>
+    <li>Scoped tool access per role. Provide narrow cross-role tools only for high-frequency needs (e.g. <code>verify_fact</code> on a synthesis agent).</li>
+    <li>Replace generic tools with constrained alternatives: <code>load_document</code> that validates document URLs is better than a generic <code>fetch_url</code>.</li>
+    <li>Description quality drives adoption — a well-described MCP tool wins over a built-in like Grep.</li>
+  </ul>
+
+  <h4><code>tool_choice</code></h4>
+  <table>
+    <tr><th>Value</th><th>Behaviour</th><th>Use when</th></tr>
+    <tr><td><code>"auto"</code></td><td>Model decides whether to call any tool</td><td>Agent needs discretion (may reply directly)</td></tr>
+    <tr><td><code>"any"</code></td><td>Model MUST call some tool</td><td>You want guaranteed structured output but any of several tools is fine</td></tr>
+    <tr><td><code>{"type":"tool","name":"X"}</code></td><td>Forces a specific tool</td><td>Pin a first step (e.g. force <code>extract_metadata</code> before enrichment)</td></tr>
+  </table>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-2/01_tool_design.py">module-2/01_tool_design.py</a>
+</details>
+
+<details class="topic" id="t5">
+  <summary>5. MCP tool and resource design <span class="domain-tag">D2</span></summary>
+
+  <h4>What it is</h4>
+  <p>MCP servers expose both <strong>tools</strong> (actions the agent invokes) and <strong>resources</strong> (content catalogs the agent can browse). Designing which pieces are which is a key exam concept.</p>
+
+  <div class="mnemonic"><strong>RvT</strong> — <strong>R</strong>esources = read-only content · <strong>T</strong>ools = actions with side effects</div>
+
+  <h4>Key facts</h4>
+  <ul>
+    <li>Resources reduce exploratory tool calls — give the agent a directory listing (issues, schemas, docs) up front instead of making it grep to discover.</li>
+    <li>Tools do things (create ticket, run query, send email). Resources let you look at things (list open tickets, browse schema).</li>
+    <li>Community MCP servers exist for standard integrations (Jira, GitHub, Slack) — prefer them over custom implementations. Reserve custom MCP servers for team-specific workflows.</li>
+    <li>Tool description quality drives adoption. Weak descriptions mean Claude falls back to built-in tools like Grep.</li>
+  </ul>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-2/03_mcp_resources.py">module-2/03_mcp_resources.py</a>
+  <a class="demo-link" href="../module-2/04_tool_descriptions.py">module-2/04_tool_descriptions.py</a>
+</details>
+
+<details class="topic" id="t6">
+  <summary>6. MCP server configuration <span class="domain-tag">D2</span></summary>
+
+  <h4>What it is</h4>
+  <p>How and where you declare MCP servers so Claude can connect to them.</p>
+
+  <div class="mnemonic"><strong>MCP-PES</strong> — <strong>P</strong>roject scope · <strong>E</strong>nv-var expansion · <strong>S</strong>imultaneous multi-server access</div>
+
+  <h4>Where to declare them</h4>
+  <table>
+    <tr><th>File</th><th>Scope</th><th>Use for</th></tr>
+    <tr><td><code>.mcp.json</code> (repo root)</td><td>Project</td><td>Team-shared tools, version-controlled</td></tr>
+    <tr><td><code>~/.claude.json</code></td><td>User</td><td>Personal or experimental servers</td></tr>
+  </table>
+
+  <h4>Environment variable expansion</h4>
+<pre><code>{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {"GITHUB_TOKEN": "${GITHUB_TOKEN}"}
+    }
+  }
+}</code></pre>
+  <p>Claude Code expands <code>${VAR}</code> at connection time from your local environment — this keeps secrets out of version control.</p>
+
+  <h4>Key facts</h4>
+  <ul>
+    <li>All configured servers' tools are discovered at connection time and available simultaneously.</li>
+    <li>Tool name collisions across servers must be resolved by the server (namespace).</li>
+    <li>Expose content catalogs (issue lists, doc hierarchies, DB schemas) as MCP resources so the agent doesn't need exploratory tool calls.</li>
+  </ul>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-2/05_mcp_config.py">module-2/05_mcp_config.py</a>
+  <a class="demo-link" href="../exercise-2-team-workflow/.mcp.json">exercise-2/.mcp.json</a>
+</details>
+
+<details class="topic" id="t7">
+  <summary>7. Error handling and propagation <span class="domain-tag">D2</span></summary>
+
+  <h4>What it is</h4>
+  <p>Structured error responses that let the agent decide how to recover — retry, ask user to fix input, explain policy, or escalate.</p>
+
+  <div class="mnemonic"><strong>TVBP</strong> — <strong>T</strong>ransient (retry) · <strong>V</strong>alidation (fix input) · <strong>B</strong>usiness (explain policy) · <strong>P</strong>ermission (escalate)</div>
+
+  <h4>Structured error response</h4>
+<pre><code>{
+  "isError": true,
+  "errorCategory": "business",
+  "isRetryable": false,
+  "errorCode": "REFUND_LIMIT_EXCEEDED",
+  "developerMessage": "Amount $650 exceeds $500 policy limit",
+  "humanMessage": "Refunds over $500 require manager approval."
+}</code></pre>
+
+  <h4>Anti-pattern</h4>
+  <div class="warn"><strong>Uniform errors</strong> like <code>{"error": "Operation failed"}</code> prevent the agent from choosing an appropriate recovery. It can't tell whether to retry, ask the user, or escalate.</div>
+
+  <h4>The empty-result vs access-failure distinction</h4>
+  <div class="good"><strong>Empty result</strong> = successful query, no matches. Return <code>{"isError": false, "results": [], "querySuccessful": true}</code>. This is NOT an error — the query worked.</div>
+  <div class="warn"><strong>Access failure</strong> = the query couldn't complete. Return an <code>isError: true</code> response with the appropriate category.</div>
+
+  <h4>Local recovery principle</h4>
+  <p>Subagents handle transient failures LOCALLY (retry once, degrade gracefully). Only propagate errors they cannot resolve — and include partial results when possible so the coordinator can decide what to do.</p>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-2/02_structured_error_responses.py">module-2/02_structured_error_responses.py</a>
+  <a class="demo-link" href="../exercise-4-multi-agent-research/03_errors_and_conflicts.py">exercise-4/03_errors_and_conflicts.py</a>
+</details>
+
+<details class="topic" id="t8">
+  <summary>8. Escalation decision-making <span class="domain-tag">D2</span></summary>
+
+  <h4>What it is</h4>
+  <p>How the agent decides when to hand off to a human — and how to make that decision reliable.</p>
+
+  <div class="mnemonic"><strong>EES</strong> — <strong>E</strong>xplicit criteria · <strong>E</strong>mpirical customer preference · <strong>S</strong>urface policy gaps</div>
+
+  <h4>Key facts</h4>
+  <ul>
+    <li>Explicit escalation criteria in the system prompt with few-shot examples of "when to escalate" outperform vague guidance.</li>
+    <li>LLM self-reported confidence is <strong>poorly calibrated</strong> — the model is often confidently wrong on hard cases. Don't rely on it as an escalation signal.</li>
+    <li>Honor customer preferences: if the customer says "get me a human", escalate immediately regardless of criteria.</li>
+    <li>Log escalations so recurring patterns surface policy gaps back to the team.</li>
+  </ul>
+
+  <h4>Exam scenario (page 26)</h4>
+  <div class="warn">An agent misclassifies which support cases need escalation. Options include: (a) add explicit criteria + few-shot examples, (b) trust the model's self-confidence, (c) train a separate classifier, (d) use sentiment analysis. <strong>Answer: (a)</strong>. This is the proportionate first response — try prompt improvements before adding infrastructure. (b) fails because LLM self-confidence is unreliable, (c) is over-engineered, (d) solves a different problem.</div>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-1/04_escalation.py">module-1/04_escalation.py</a>
+  <a class="demo-link" href="../exercise-1-multi-tool-agent/02_hooks_and_multiconcern.py">exercise-1/02_hooks_and_multiconcern.py</a>
+</details>
+
+<h2>Domain 3 — Claude Code Configuration &amp; Workflows <small style="font-weight:normal; color:var(--muted)">(20%)</small></h2>
+
+<details class="topic" id="t9">
+  <summary>9. CLAUDE.md configuration <span class="domain-tag">D3</span></summary>
+
+  <h4>What it is</h4>
+  <p>The hierarchical configuration system that tells Claude how to behave in a given project.</p>
+
+  <div class="mnemonic"><strong>UPD</strong> — <strong>U</strong>ser level · <strong>P</strong>roject level · <strong>D</strong>irectory level</div>
+
+  <h4>The hierarchy</h4>
+  <table>
+    <tr><th>Scope</th><th>Location</th><th>Shared with team?</th></tr>
+    <tr><td>User</td><td><code>~/.claude/CLAUDE.md</code></td><td><strong>No</strong> — personal only</td></tr>
+    <tr><td>Project</td><td><code>.claude/CLAUDE.md</code> or root <code>CLAUDE.md</code></td><td>Yes, via version control</td></tr>
+    <tr><td>Directory</td><td>Subfolder <code>CLAUDE.md</code></td><td>Yes, applies within that subtree</td></tr>
+  </table>
+
+  <h4>The classic diagnosis question</h4>
+  <div class="warn">A new team member isn't receiving an instruction you added. Most likely cause: you placed it in <code>~/.claude/CLAUDE.md</code> (user-scoped, not shared via VCS). Move it to <code>.claude/CLAUDE.md</code> or the root <code>CLAUDE.md</code>.</div>
+
+  <h4>Modularity</h4>
+  <ul>
+    <li>Use <code>@import</code> syntax to reference external files: <code>@packages/api/standards.md</code></li>
+    <li>Split large CLAUDE.md into topic files in <code>.claude/rules/</code>: <code>testing.md</code>, <code>api-conventions.md</code>, <code>deployment.md</code></li>
+    <li>Use <code>/memory</code> command to inspect which memory files are actually loaded.</li>
+  </ul>
+
+  <h4>Path-scoped rules (see also Topic 3.3)</h4>
+<pre><code>---
+paths: ["**/*.test.tsx"]
+---
+# Test file conventions
+- Use React Testing Library, not Enzyme
+- Wrap async tests with `waitFor`</code></pre>
+  <p>This rule loads ONLY when editing matching files, saving tokens. Prefer path-scoped rules over subdirectory <code>CLAUDE.md</code> when the convention spans multiple directories.</p>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-3/01_explain_hierarchy.py">module-3/01_explain_hierarchy.py</a>
+  <a class="demo-link" href="../module-3/01_claude_md_hierarchy/">module-3/01_claude_md_hierarchy/</a>
+</details>
+
+<details class="topic" id="t10">
+  <summary>10. Custom commands and skills <span class="domain-tag">D3</span></summary>
+
+  <h4>What it is</h4>
+  <p>Reusable, versioned workflows you can invoke on demand: slash commands (parameterised prompts) and skills (larger workflows with tool restrictions).</p>
+
+  <div class="mnemonic"><strong>SKILL</strong> — <strong>c</strong>ontext:fork · a<strong>l</strong>lowed-tools · argument-h<strong>i</strong>nt</div>
+
+  <h4>Commands vs skills</h4>
+  <table>
+    <tr><th></th><th>Commands</th><th>Skills</th></tr>
+    <tr><td>Location (project)</td><td><code>.claude/commands/*.md</code></td><td><code>.claude/skills/*/SKILL.md</code></td></tr>
+    <tr><td>Location (user)</td><td><code>~/.claude/commands/</code></td><td><code>~/.claude/skills/</code></td></tr>
+    <tr><td>Invocation</td><td><code>/command-name</code></td><td>Auto or explicit skill invocation</td></tr>
+    <tr><td>Best for</td><td>Short parameterised prompts</td><td>Larger workflows with tool restrictions</td></tr>
+  </table>
+
+  <h4>Skill frontmatter fields</h4>
+<pre><code>---
+name: analyze-codebase
+description: Deep-analyze a codebase and produce a summary
+context: fork
+allowed-tools: [Read, Grep, Glob]
+argument-hint: &lt;path-to-analyze&gt;
+---</code></pre>
+
+  <h4>Why <code>context: fork</code></h4>
+  <div class="good"><strong>context: fork</strong> runs the skill in an isolated sub-agent context. Its output stays out of the main conversation. Perfect for skills that produce verbose output (codebase analysis) or exploratory context (brainstorming) — you don't want that flooding your main session.</div>
+
+  <h4>Personal customization</h4>
+  <p>Want a personal variant of a team skill? Create it in <code>~/.claude/skills/</code> with a different name. It won't affect teammates but is available in your sessions.</p>
+
+  <h4>Skills vs CLAUDE.md — when to use which</h4>
+  <ul>
+    <li><strong>CLAUDE.md</strong> = always-loaded universal standards.</li>
+    <li><strong>Skills</strong> = on-demand invocation for task-specific workflows.</li>
+  </ul>
+
+  <h4>Runnable examples</h4>
+  <a class="demo-link" href="../module-3/02_custom_commands_skills/">module-3/02_custom_commands_skills/</a>
+  <a class="demo-link" href="../.claude/commands/">.claude/commands/</a>
+  <a class="demo-link" href="../.claude/skills/">.claude/skills/</a>
+</details>
+
+<details class="topic" id="t11">
+  <summary>11. Plan mode vs direct execution <span class="domain-tag">D3</span></summary>
+
+  <h4>What it is</h4>
+  <p>Deciding whether to enter Claude Code's Plan Mode (explore + design first) or execute changes directly.</p>
+
+  <div class="mnemonic"><strong>PLAN</strong> — <strong>P</strong>arallel valid approaches · <strong>L</strong>arge-scale · <strong>A</strong>mbiguous · <strong>N</strong>ovel domain</div>
+
+  <h4>When plan mode wins</h4>
+  <ul>
+    <li>Architectural implications (microservice restructuring, library migrations affecting 45+ files)</li>
+    <li>Multiple valid approaches — you need to compare before committing</li>
+    <li>Multi-file modifications where the diff shape is not yet clear</li>
+    <li>Unfamiliar area of the codebase — you need to explore first</li>
+  </ul>
+
+  <h4>When direct execution wins</h4>
+  <ul>
+    <li>Single-file bug fix with clear stack trace</li>
+    <li>Adding a validation conditional</li>
+    <li>Well-scoped rename or refactor</li>
+    <li>Any change where the diff shape is obvious before you start</li>
+  </ul>
+
+  <h4>Combining the two</h4>
+  <p>Common pattern: use plan mode for investigation, then exit plan mode and use direct execution for implementation. The Explore subagent can isolate verbose discovery output so it doesn't consume your main context window.</p>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-3/04_plan_vs_direct.py">module-3/04_plan_vs_direct.py</a>
+  <a class="demo-link" href="../exercise-2-team-workflow/PLAN_MODE_vs_DIRECT.md">exercise-2/PLAN_MODE_vs_DIRECT.md</a>
+</details>
+
+<details class="topic" id="t12">
+  <summary>12. Iterative refinement <span class="domain-tag">D3</span></summary>
+
+  <h4>What it is</h4>
+  <p>Techniques for progressive improvement of a solution — bringing Claude to the right answer through examples, tests, or dialogue rather than one-shot prompting.</p>
+
+  <div class="mnemonic"><strong>TIC</strong> — <strong>T</strong>ests-first · <strong>I</strong>/O examples · <strong>C</strong>onversation-interview</div>
+
+  <h4>Techniques (guide page 15)</h4>
+  <ul>
+    <li><strong>Concrete I/O examples</strong> — 2-3 pairs of (input, expected output) beat prose descriptions when prose is being interpreted inconsistently.</li>
+    <li><strong>Test-driven iteration</strong> — write test suites first (covering happy path, edge cases, performance), then iterate by sharing test failures. Claude fixes based on failing tests rather than your descriptions.</li>
+    <li><strong>Interview pattern</strong> — have Claude ask you questions before implementing (surfaces considerations you hadn't anticipated — cache invalidation, failure modes, etc.).</li>
+  </ul>
+
+  <h4>Together vs sequential</h4>
+  <div class="good"><strong>Together (single message)</strong> — when the issues interact. Claude needs to see the full picture so its fix for A doesn't break B.</div>
+  <div class="good"><strong>Sequentially (across messages)</strong> — when the issues are independent. Fixing one shouldn't require reasoning about the other.</div>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-3/05_iterative_refinement.py">module-3/05_iterative_refinement.py</a>
+</details>
+
+<h2>Domain 4 — Prompt Engineering &amp; Structured Output <small style="font-weight:normal; color:var(--muted)">(20%)</small></h2>
+
+<details class="topic" id="t13">
+  <summary>13. Structured output via tool_use <span class="domain-tag">D4</span></summary>
+
+  <h4>What it is</h4>
+  <p>Getting Claude to return JSON conforming to a schema by defining that schema as a tool's <code>input_schema</code> and forcing the tool via <code>tool_choice</code>.</p>
+
+  <div class="mnemonic"><strong>SNT</strong> — <strong>S</strong>chema-first · <strong>N</strong>ullable fields · <strong>T</strong>ool_choice pin</div>
+
+  <h4>The pattern</h4>
+<pre><code>tool = {
+    "name": "extract_customer_info",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "email": {"type": ["string", "null"]},  # nullable
+            "tier": {"type": "string", "enum": ["premium", "standard", "other"]},
+            "tier_detail": {"type": ["string", "null"]}  # required when tier == "other"
+        },
+        "required": ["name", "email", "tier"]
+    }
+}
+resp = client.messages.create(
+    ...,
+    tools=[tool],
+    tool_choice={"type": "tool", "name": "extract_customer_info"}  # forced
+)</code></pre>
+
+  <h4>Nullable fields</h4>
+  <div class="good">Mark uncertain fields as nullable. Claude will return <code>null</code> when the source doesn't have the info — this <strong>prevents hallucination</strong>. Without nullable, Claude will invent a plausible value.</div>
+
+  <h4>Enum + "other" pattern</h4>
+  <p>For classifications with an open-ended fallback: give an enum with a literal <code>"other"</code> option, plus a nullable <code>detail</code> field. Validate that when the classification is "other", the detail field is populated.</p>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-4/03_structured_output_tool_use.py">module-4/03_structured_output_tool_use.py</a>
+  <a class="demo-link" href="../exercise-3-extraction-pipeline/01_schema_and_extract.py">exercise-3/01_schema_and_extract.py</a>
+</details>
+
+<details class="topic" id="t14">
+  <summary>14. Few-shot prompting <span class="domain-tag">D4</span></summary>
+
+  <h4>What it is</h4>
+  <p>Providing 2-5 example (input, output) pairs in the prompt to guide the model on ambiguous or edge cases.</p>
+
+  <div class="mnemonic"><strong>FEW</strong> — <strong>F</strong>ormat consistency · <strong>E</strong>dge cases first · <strong>W</strong>rong-answer examples included</div>
+
+  <h4>Key principles</h4>
+  <ul>
+    <li><strong>Target ambiguous cases</strong> — few-shot's job is to disambiguate. Easy cases don't need examples.</li>
+    <li><strong>Format consistency</strong> — same shape across all examples (labels, punctuation, casing).</li>
+    <li><strong>Include false-positive examples</strong> — show the model what NOT to classify as X, not just what IS X. This reduces false positives.</li>
+    <li>3-5 examples is the usual sweet spot. Diminishing returns beyond that.</li>
+  </ul>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-4/02_few_shot_prompting.py">module-4/02_few_shot_prompting.py</a>
+</details>
+
+<details class="topic" id="t15">
+  <summary>15. Batch processing <span class="domain-tag">D4</span></summary>
+
+  <h4>What it is</h4>
+  <p>Using the Message Batches API for high-volume, non-urgent workloads. 50% discount vs sync, up to 24h latency.</p>
+
+  <div class="mnemonic"><strong>BATCH</strong> — <strong>B</strong>est for non-urgent · <strong>A</strong>mount 50% off · <strong>T</strong>ool use single-turn only · <strong>C</strong>ustom_id correlate · <strong>H</strong>andle per-item failures</div>
+
+  <h4>When it fits</h4>
+  <table>
+    <tr><th>Use batches when</th><th>Do NOT use batches when</th></tr>
+    <tr><td>Overnight extraction from 10,000 docs</td><td>Interactive customer support</td></tr>
+    <tr><td>Bulk document classification</td><td>Multi-turn tool loops (batches are single-turn)</td></tr>
+    <tr><td>Nightly report generation</td><td>Anything user-facing with a latency SLA</td></tr>
+  </table>
+
+  <h4>Correlation via custom_id</h4>
+  <p>Each batch request carries a <code>custom_id</code>. Responses come back with the same id so you know which request each response answers. Retry only the failed items — reuse the id with a suffix like <code>id + "__retry"</code>.</p>
+
+  <div class="warn">A batch request with <code>params: {}</code> is invalid. When resubmitting failed items, carry the original params forward — don't emit an empty params dict.</div>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-4/05_batch_processing.py">module-4/05_batch_processing.py</a>
+  <a class="demo-link" href="../exercise-3-extraction-pipeline/03_batch_and_confidence.py">exercise-3/03_batch_and_confidence.py</a>
+</details>
+
+<h2>Domain 5 — Context Management &amp; Reliability <small style="font-weight:normal; color:var(--muted)">(15%)</small></h2>
+
+<details class="topic" id="t16">
+  <summary>16. Context window optimization <span class="domain-tag">D5</span></summary>
+
+  <h4>What it is</h4>
+  <p>Techniques to fit more useful information into the context window and to keep the model's recall of critical facts high.</p>
+
+  <div class="mnemonic"><strong>TRIM</strong> — <strong>T</strong>rim verbose outputs · <strong>R</strong>eorder for position · <strong>I</strong>mportant facts extract · <strong>M</strong>iddle-of-context loss</div>
+
+  <h4>Techniques</h4>
+  <ul>
+    <li><strong>Trim verbose tool outputs</strong> — summarise before appending to messages. A 50KB grep result usually needs only the 5 relevant lines.</li>
+    <li><strong>Structured fact extraction</strong> — pull key facts out of long docs into a compact structured summary; feed the summary instead of the raw doc.</li>
+    <li><strong>Position-aware input ordering</strong> — critical facts at START and END of prompt. Middle-of-context recall is measurably weaker ("lost in the middle").</li>
+    <li><strong>Scratchpad files</strong> — persist working state to disk when it outgrows the context window.</li>
+  </ul>
+
+  <h4>The "lost in the middle" effect</h4>
+  <div class="warn">Studies show recall drops for content in the middle third of a long prompt. If you're stuffing a 100KB document in and asking a question about it, put the critical instructions BEFORE and AFTER the document — not just before.</div>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-5/01_context_window.py">module-5/01_context_window.py</a>
+  <a class="demo-link" href="../module-5/02_progressive_summarization.py">module-5/02_progressive_summarization.py</a>
+</details>
+
+<details class="topic" id="t17">
+  <summary>17. Human review workflows <span class="domain-tag">D5</span></summary>
+
+  <h4>What it is</h4>
+  <p>Routing uncertain LLM outputs to humans for review — with the confidence threshold based on real measured error rates, not the model's self-report.</p>
+
+  <div class="mnemonic"><strong>CALIBRATE</strong> — <strong>C</strong>onfidence calibrated · <strong>A</strong>ccuracy segmented · <strong>L</strong>abeled ground truth · <strong>I</strong>mplementation via sampling · <strong>B</strong>oundary threshold routes to human</div>
+
+  <h4>Core insight</h4>
+  <div class="warn">LLM self-reported confidence is <strong>poorly calibrated</strong>. A model can be 0.95 confident and wrong. You can't use raw model confidence as the routing signal — it needs calibration.</div>
+
+  <h4>The calibration workflow</h4>
+  <ol>
+    <li>Build a labeled validation set (ground truth for 100-1000 documents).</li>
+    <li>Run the extraction on the validation set; record model confidence AND correctness.</li>
+    <li>Compute: at each confidence threshold X, what is the error rate?</li>
+    <li>Set threshold based on your business tolerance for errors.</li>
+    <li>Stratified sampling: measure error rate broken down by document type AND by field — accuracy is not uniform.</li>
+  </ol>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-5/05_human_review.py">module-5/05_human_review.py</a>
+  <a class="demo-link" href="../exercise-3-extraction-pipeline/02_validation_retry.py">exercise-3/02_validation_retry.py</a>
+</details>
+
+<details class="topic" id="t18">
+  <summary>18. Information provenance <span class="domain-tag">D5</span></summary>
+
+  <h4>What it is</h4>
+  <p>Tracking WHERE each claim came from, WHEN, and how reliable it is. Essential for research and analysis outputs where the user needs to verify.</p>
+
+  <div class="mnemonic"><strong>CLASP</strong> — <strong>C</strong>laim · <strong>L</strong>inked source · <strong>A</strong>s-of date · <strong>S</strong>tatus · <strong>P</strong>artial coverage reported</div>
+
+  <h4>What every finding should carry</h4>
+  <ul>
+    <li><strong>Claim</strong> — the specific statement being made</li>
+    <li><strong>Source</strong> — URL or document reference (not "a study" — an actual link)</li>
+    <li><strong>As-of date</strong> — when was this true? A 2019 fact may be outdated in 2026.</li>
+    <li><strong>Status</strong> — WELL_ESTABLISHED (multiple corroborating sources) / CONTESTED (sources disagree) / UNVERIFIED (single-source)</li>
+  </ul>
+
+  <h4>Conflict annotation</h4>
+  <div class="good">When two sources disagree, DO NOT silently pick one. Annotate the conflict, cite both sources with dates, mark the claim CONTESTED, and let the user decide.</div>
+
+  <h4>Coverage gaps</h4>
+  <p>Report what you DIDN'T find, not just what you did. "I found data for 2020-2024 but no 2025 figures were available" is more useful than silently omitting 2025.</p>
+
+  <h4>Runnable demos</h4>
+  <a class="demo-link" href="../module-5/06_information_provenance.py">module-5/06_information_provenance.py</a>
+  <a class="demo-link" href="../exercise-4-multi-agent-research/02_structured_findings.py">exercise-4/02_structured_findings.py</a>
+</details>
+
+<h2>Out-of-Scope Topics (do NOT study these)</h2>
+<p>These are explicitly excluded on the exam guide page 36:</p>
+<ul>
+  <li>Fine-tuning, RLHF, Constitutional AI</li>
+  <li>Claude API authentication, billing, rate limiting, quotas</li>
+  <li>MCP server deployment / hosting / infrastructure / networking</li>
+  <li>Claude's internal architecture, training process, model weights</li>
+  <li>Embedding models, vector database internals</li>
+  <li>Computer use, browser automation, vision/image analysis</li>
+  <li>Streaming API implementation, SSE</li>
+  <li>Prompt caching implementation details (knowing it exists is fine)</li>
+  <li>Token counting algorithms / tokenization specifics</li>
+  <li>Specific cloud provider config (AWS/GCP/Azure)</li>
+  <li>Performance benchmarking, model comparison metrics</li>
+</ul>
+
+<footer>
+  Generated for the CCA-F Foundations Exam · references the guide by exact page numbers · pair with the runnable demos in <code>../module-1/</code> through <code>../module-5/</code>
+</footer>
+
+</body>
+</html>
