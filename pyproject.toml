@@ -1,7 +1,11 @@
 [project]
 name = "stop-reason-end-turn"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 dependencies = [
     "anthropic>=0.115.1",
 ]
+
+[tool.uv.workspace]
+members = ["module-*", "exercise-*"]
+exclude = ["exercise-2-team-workflow"]

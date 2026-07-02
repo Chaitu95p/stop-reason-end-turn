@@ -16,19 +16,19 @@ Runnable Python demos for the **Claude Certified Architect – Foundations (CCA-
 
 ## Commands
 
-Each module is an independent project — always `cd` into the module first.
+This is a **uv workspace**. One shared `.venv` at the repo root serves every module and exercise. Sync once from root, then `uv run` from any member folder resolves against the shared env.
 
 ```bash
-# Install dependencies (first time, or after cloning)
-cd module-1 && uv sync
+# Install dependencies (first time, or after cloning) -- run at REPO ROOT
+uv sync
 
-# Run a single demo script
+# Run a single demo script (uv resolves the workspace env automatically)
 cd module-1 && uv run python 01_agentic_loop.py
 
 # Run all demo scripts in a module in order
 cd module-2 && for f in 0*.py; do echo "=== $f ===" && uv run python "$f"; done
 
-# Add a dependency to a module
+# Add a dependency to one member (writes to that member's pyproject.toml)
 cd module-3 && uv add <package>
 ```
 
@@ -42,9 +42,20 @@ There are no automated tests. The "test" is running the script and verifying the
 
 ## Architecture
 
-### Multi-project layout
+### uv workspace layout
 
-Each `module-N/` is a fully independent `uv` project with its own `.venv`, `pyproject.toml`, and `uv.lock`. There is no root-level Python project or shared virtualenv — dependencies are installed per-module. All five modules have a single dependency: `anthropic>=0.115.1`, Python ≥ 3.12.
+The repo is a uv workspace declared at the root `pyproject.toml`:
+
+```toml
+[tool.uv.workspace]
+members = ["module-*", "exercise-*"]
+exclude = ["exercise-2-team-workflow"]   # config-only, no Python
+```
+
+- One `.venv` and one `uv.lock` live at the repo root; there are no per-member venvs or locks.
+- Each member (`module-N/`, `exercise-N-*/`) still owns its `pyproject.toml` — that's how `exercise-3-extraction-pipeline` adds `pydantic` without contaminating other members.
+- All members target Python ≥ 3.12. Common dep: `anthropic>=0.115.1`.
+- `exercise-2-team-workflow` is config-only (`.claude/`, `.mcp.json`, `CLAUDE.md`) and is excluded from the workspace on purpose — it has no Python code.
 
 `main.py` in each module is uv-generated boilerplate (prints a hello string) and is not used by any demo. All content is in the numbered `0N_name.py` scripts.
 
