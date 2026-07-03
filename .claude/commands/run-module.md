@@ -13,9 +13,9 @@ Steps:
      - 4: Prompt Engineering & Structured Output
      - 5: Context Management & Reliability
 
-2. Use Bash to run each script in `module-$ARGUMENTS/` that matches `0*.py`, in order:
+2. Use Bash to run each script in `modules/module-$ARGUMENTS/` that matches `0*.py`, in order:
    ```
-   cd module-$ARGUMENTS && for f in $(ls 0*.py | sort); do
+   cd modules/module-$ARGUMENTS && for f in $(ls 0*.py | sort); do
      echo ""; echo "========== $f =========="; uv run python "$f"
    done
    ```

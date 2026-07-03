@@ -23,20 +23,20 @@ This is a **uv workspace**. One shared `.venv` at the repo root serves every mod
 uv sync
 
 # Run a single demo script (uv resolves the workspace env automatically)
-cd module-1 && uv run python 01_agentic_loop.py
+cd modules/module-1 && uv run python 01_agentic_loop.py
 
 # Run all demo scripts in a module in order
-cd module-2 && for f in 0*.py; do echo "=== $f ===" && uv run python "$f"; done
+cd modules/module-2 && for f in 0*.py; do echo "=== $f ===" && uv run python "$f"; done
 
 # Add a dependency to one member (writes to that member's pyproject.toml)
-cd module-3 && uv add <package>
+cd modules/module-3 && uv add <package>
 ```
 
 Custom slash commands (available in this Claude Code session):
-- `/run-module 2` — runs all scripts in module-2 in order
-- `/run-script module-1/01_agentic_loop.py` — runs one script and summarizes it
-- `/review-script module-3/04_plan_vs_direct.py` — quality-checks a demo script
-- `/new-demo module-1 1.8` — scaffolds a new numbered demo script
+- `/run-module 2` — runs all scripts in modules/module-2 in order
+- `/run-script modules/module-1/01_agentic_loop.py` — runs one script and summarizes it
+- `/review-script modules/module-3/04_plan_vs_direct.py` — quality-checks a demo script
+- `/new-demo modules/module-1 1.8` — scaffolds a new numbered demo script
 
 There are no automated tests. The "test" is running the script and verifying the printed output.
 
@@ -48,14 +48,14 @@ The repo is a uv workspace declared at the root `pyproject.toml`:
 
 ```toml
 [tool.uv.workspace]
-members = ["module-*", "exercise-*"]
-exclude = ["exercise-2-team-workflow"]   # config-only, no Python
+members = ["modules/module-*", "exercises/exercise-*"]
+exclude = ["exercises/exercise-2-team-workflow"]   # config-only, no Python
 ```
 
 - One `.venv` and one `uv.lock` live at the repo root; there are no per-member venvs or locks.
-- Each member (`module-N/`, `exercise-N-*/`) still owns its `pyproject.toml` — that's how `exercise-3-extraction-pipeline` adds `pydantic` without contaminating other members.
+- Each member (`modules/module-N/`, `exercises/exercise-N-*/`) still owns its `pyproject.toml` — that's how `exercise-3-extraction-pipeline` adds `pydantic` without contaminating other members.
 - All members target Python ≥ 3.12. Common dep: `anthropic>=0.115.1`.
-- `exercise-2-team-workflow` is config-only (`.claude/`, `.mcp.json`, `CLAUDE.md`) and is excluded from the workspace on purpose — it has no Python code.
+- `exercises/exercise-2-team-workflow` is config-only (`.claude/`, `.mcp.json`, `CLAUDE.md`) and is excluded from the workspace on purpose — it has no Python code.
 
 `main.py` in each module is uv-generated boilerplate (prints a hello string) and is not used by any demo. All content is in the numbered `0N_name.py` scripts.
 
@@ -89,7 +89,7 @@ All scripts use the synchronous `anthropic.Anthropic()` client with `model="clau
 
 ### Module-3 is unique
 
-module-3 contains Python scripts AND three example subdirectories of Claude Code config files:
+modules/module-3 contains Python scripts AND three example subdirectories of Claude Code config files:
 - `01_claude_md_hierarchy/` — CLAUDE.md at user/project/subdirectory levels
 - `02_custom_commands_skills/` — command `.md` and skill `SKILL.md` frontmatter format
 - `03_path_specific_rules/` — `.claude/rules/` files with YAML `paths:` frontmatter
@@ -103,8 +103,8 @@ These are pedagogical demos of config concepts for the exam — not the real pro
 - `hooks/post-tool-use.sh` — appends every tool call to `.claude/tool-usage.log`
 - `commands/` — run-module, run-script, review-script, new-demo
 - `skills/` — explore-module, generate-quiz, check-exam-coverage (all `context: fork`, read-only)
-- `rules/demo-scripts.md` — injected when editing `module-*/0*.py`
-- `rules/config-examples.md` — injected when editing `module-3/**/*.md`
+- `rules/demo-scripts.md` — injected when editing `modules/module-*/0*.py`
+- `rules/config-examples.md` — injected when editing `modules/module-3/**/*.md`
 
 ## Constraints when editing demo scripts
 
@@ -114,5 +114,5 @@ These are pedagogical demos of config concepts for the exam — not the real pro
 - Every script must stay runnable as `uv run python <filename>` from its module directory.
 - KEY TAKEAWAYS section must remain accurate after any change.
 
-@module-1/01_agentic_loop.py
-@module-2/02_structured_error_responses.py
+@modules/module-1/01_agentic_loop.py
+@modules/module-2/02_structured_error_responses.py

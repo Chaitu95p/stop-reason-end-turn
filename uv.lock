@@ -18,7 +18,7 @@ members = [
 [[package]]
 name = "agentic-architecture-orchestration"
 version = "0.1.0"
-source = { virtual = "module-1" }
+source = { virtual = "modules/module-1" }
 dependencies = [
     { name = "anthropic" },
 ]
@@ -37,7 +37,7 @@ wheels = [
 
 [[package]]
 name = "anthropic"
-version = "0.115.1"
+version = "0.116.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -49,9 +49,9 @@ dependencies = [
     { name = "sniffio" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/99/e2/e27b1e70b1ddcda72362d6a26c9c699a46173d48a6c7ba966e8cc97a6c4d/anthropic-0.115.1.tar.gz", hash = "sha256:040287319abb909acf1cc49d83c0405dc0b1121ef257034b02c2b54151cf2446", size = 949185, upload-time = "2026-07-01T21:54:19.05Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/66/a2/d31f14e28d49bae983a3634e38dfb4b31c50110b5e403596c5c6a20b23f8/anthropic-0.116.0.tar.gz", hash = "sha256:5fc248fbb9fe03ef686f8a774f81586bca31a043260aab88b387ea3660f4a396", size = 949149, upload-time = "2026-07-02T19:08:10.534Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/85/3c/501c58a8f8c68811079e218a25d8672fe4fb9a650a4655e499e24d9375e9/anthropic-0.115.1-py3-none-any.whl", hash = "sha256:685fa94964c1b9428f6a76e42d0dbae49aa2016f5ad386a96becac04c5e80ef9", size = 957006, upload-time = "2026-07-01T21:54:17.392Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/dd/2a1e81cf1b163acc340afc4ec74ed1d86f5eed1a809fabdeed3e0997b346/anthropic-0.116.0-py3-none-any.whl", hash = "sha256:6c0a7698e8d652455da3499978279bb2588c7264d0a35be3666009a4258c8256", size = 956896, upload-time = "2026-07-02T19:08:08.756Z" },
 ]
 
 [[package]]
@@ -79,7 +79,7 @@ wheels = [
 [[package]]
 name = "claude-code-configuration"
 version = "0.1.0"
-source = { virtual = "module-3" }
+source = { virtual = "modules/module-3" }
 dependencies = [
     { name = "anthropic" },
 ]
@@ -90,7 +90,7 @@ requires-dist = [{ name = "anthropic", specifier = ">=0.115.1" }]
 [[package]]
 name = "context-management-reliability"
 version = "0.1.0"
-source = { virtual = "module-5" }
+source = { virtual = "modules/module-5" }
 dependencies = [
     { name = "anthropic" },
 ]
@@ -119,7 +119,7 @@ wheels = [
 [[package]]
 name = "exercise-1-multi-tool-agent"
 version = "0.1.0"
-source = { virtual = "exercise-1-multi-tool-agent" }
+source = { virtual = "exercises/exercise-1-multi-tool-agent" }
 dependencies = [
     { name = "anthropic" },
 ]
@@ -130,7 +130,7 @@ requires-dist = [{ name = "anthropic", specifier = ">=0.115.1" }]
 [[package]]
 name = "exercise-3-extraction-pipeline"
 version = "0.1.0"
-source = { virtual = "exercise-3-extraction-pipeline" }
+source = { virtual = "exercises/exercise-3-extraction-pipeline" }
 dependencies = [
     { name = "anthropic" },
     { name = "pydantic" },
@@ -145,7 +145,7 @@ requires-dist = [
 [[package]]
 name = "exercise-4-multi-agent-research"
 version = "0.1.0"
-source = { virtual = "exercise-4-multi-agent-research" }
+source = { virtual = "exercises/exercise-4-multi-agent-research" }
 dependencies = [
     { name = "anthropic" },
 ]
@@ -270,7 +270,7 @@ wheels = [
 [[package]]
 name = "prompt-engineering-structured-output"
 version = "0.1.0"
-source = { virtual = "module-4" }
+source = { virtual = "modules/module-4" }
 dependencies = [
     { name = "anthropic" },
 ]
@@ -391,7 +391,7 @@ requires-dist = [{ name = "anthropic", specifier = ">=0.115.1" }]
 [[package]]
 name = "tool-design-mcp-integration"
 version = "0.1.0"
-source = { virtual = "module-2" }
+source = { virtual = "modules/module-2" }
 dependencies = [
     { name = "anthropic" },
 ]

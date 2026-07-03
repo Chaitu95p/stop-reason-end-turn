@@ -1,8 +1,8 @@
 ---
 paths:
-  - "module-3/01_claude_md_hierarchy/*.md"
-  - "module-3/02_custom_commands_skills/*.md"
-  - "module-3/03_path_specific_rules/*.md"
+  - "modules/module-3/01_claude_md_hierarchy/*.md"
+  - "modules/module-3/02_custom_commands_skills/*.md"
+  - "modules/module-3/03_path_specific_rules/*.md"
 ---
 
 # Config Example File Conventions

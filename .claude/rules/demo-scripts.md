@@ -1,12 +1,12 @@
 ---
 paths:
-  - "module-*/0*.py"
+  - "modules/module-*/0*.py"
 ---
 
 # Demo Script Conventions
 
 These rules apply whenever you are reading, editing, or creating a Python demo
-script (`0N_name.py`) inside any `module-*/` directory.
+script (`0N_name.py`) inside any `modules/module-*/` directory.
 
 ## Required header docstring
 

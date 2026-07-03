@@ -3,7 +3,7 @@
 # Scaffolds a new numbered demo script following project conventions.
 
 The argument format is: `<module-dir> <domain>.<task>`
-Example: `/new-demo module-1 1.8` creates `module-1/08_<name>.py`
+Example: `/new-demo modules/module-1 1.8` creates `modules/module-1/08_<name>.py`
 
 Steps:
 1. Parse $ARGUMENTS:

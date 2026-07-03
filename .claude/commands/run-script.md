@@ -6,7 +6,7 @@ The argument is a relative path to a demo script (e.g. `module-2/03_tool_distrib
 
 Steps:
 1. Verify the file exists. If $ARGUMENTS is empty or the file is not found:
-   - List all available scripts with: Glob('module-*/0*.py')
+   - List all available scripts with: Glob('modules/module-*/0*.py')
    - Ask the user which one to run.
 
 2. Read the script's header docstring to understand:
