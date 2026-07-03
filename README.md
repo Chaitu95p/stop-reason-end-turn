@@ -21,6 +21,9 @@ Each **module** maps to one exam domain. Each **exercise** works through one of 
 │   ├── exercise-3-extraction-pipeline/    ← Prep Exercise 3: structured extraction
 │   └── exercise-4-multi-agent-research/   ← Prep Exercise 4: multi-agent research
 │
+├── mcp-explorer/          ← FastMCP SDK deep-dive (11 runnable scripts + tests)
+├── exam-prep/             ← CCA-F study guide, tips & tricks, quick-reference card
+│
 ├── pyproject.toml   ← uv workspace root
 ├── uv.lock          ← single shared lock file
 └── CLAUDE.md        ← agent-facing project instructions
@@ -83,12 +86,45 @@ Custom skills in `.claude/skills/`:
 - **generate-quiz** — 10 exam-style multiple-choice questions from a module
 - **check-exam-coverage** — cross-check demos against the exam domain list
 
-## Exam reference
+## MCP Explorer
+
+`mcp-explorer/` is a standalone uv workspace member (registered in the root `pyproject.toml`) with its own deps (`fastmcp`, `pytest`, `pytest-asyncio`). It covers the full FastMCP surface area as 11 self-contained, runnable scripts:
+
+| Script | Coverage |
+|--------|---------|
+| `00_smoke_test.py` | Minimal end-to-end: tool + resource + prompt |
+| `01_server_basics.py` | FastMCP constructor, transport options |
+| `02_tools_deep_dive.py` | Sync/async, Pydantic params, ToolAnnotations, ToolError |
+| `03_resources_deep_dive.py` | Static, template, multi-param, binary resources |
+| `04_prompts_deep_dive.py` | String return, multi-turn Message list, typed params |
+| `05_context_features.py` | ctx logging, progress, ctx.read_resource, ctx.get_prompt |
+| `06_client_basics.py` | All client ops, log/progress callbacks, error handling |
+| `07_error_handling.py` | TVBP ToolError categories, mask_error_details, empty vs error |
+| `08_server_composition.py` | gateway.mount, namespace prefixing |
+| `09_real_world_patterns.py` | Lifespan, concurrent calls, Anthropic SDK agentic loop |
+| `10_testing_patterns.py` | pytest-asyncio fixtures, ToolError assertions, parametrize |
+
+Run any script with `uv run python <script>` from `mcp-explorer/`, or run all tests with `uv run pytest 10_testing_patterns.py -v`. See `mcp-explorer/tips_tricks_gotchas.md` for a reference of gotchas and do/don't patterns found during development.
+
+## Exam preparation
+
+`exam-prep/` contains targeted study materials derived from the CCA-F Exam Guide:
+
+| File | Content |
+|------|---------|
+| `README.md` | Master study guide + 10-day study plan |
+| `01_preparation_recommendations.md` | All 7 official recommendations, annotated |
+| `02_exercises.md` | All 4 official prep exercises with exam focus notes |
+| `03_scope_reference.md` | In-scope and out-of-scope topic list |
+| `04_tips_and_tricks.md` | Mnemonics, anti-patterns, day-of-exam strategy |
+| `05_quick_reference_card.md` | Canonical code patterns from memory |
 
 The authoritative exam guide is `CCA-F Latest Exam+Guide v1.pdf` in this repo. The domain weightings and Preparation Exercises 1-4 come directly from it.
 
-## No tests
+## Tests
 
-There is no test suite — the "test" is running each script and verifying the printed output makes sense (correct tool call sequence, expected `stop_reason` transitions, structured error payloads formatted right, etc.).
+`modules/` and `exercises/` have no automated tests — the "test" is running each script and verifying the printed output (correct tool call sequence, expected `stop_reason` transitions, structured error payloads, etc.).
+
+`mcp-explorer/10_testing_patterns.py` is a full pytest suite (18 tests) demonstrating how to test FastMCP servers with `pytest-asyncio`.
 
 See `CLAUDE.md` for the full contributor / agent guide.
