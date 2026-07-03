@@ -208,6 +208,92 @@ def demonstrate_goal_vs_procedural_prompts() -> None:
 
 
 # ---------------------------------------------------------------------------
+# AgentDefinition structure & allowedTools requirement (SDK-level config)
+# ---------------------------------------------------------------------------
+def show_agent_definition_and_allowed_tools() -> None:
+    """
+    KEY EXAM CONCEPT: AgentDefinition and allowedTools.
+
+    In the Claude Agent SDK, each agent type is defined with:
+      name        : unique identifier for this agent type
+      description : read by the coordinator to select the right subagent
+      systemPrompt: instructions scoped to this agent type
+      tools       : MCP tool names this agent can call
+      allowedTools: built-in Claude Code tools permitted -- MUST include
+                    "Task" for a coordinator to be able to spawn subagents
+
+    If "Task" is absent from allowedTools, the coordinator CANNOT spawn
+    subagents regardless of what its system prompt instructs.
+    """
+    sep = "-" * 50
+    print(sep)
+    print("CORRECT: Coordinator AgentDefinition (allowedTools includes 'Task')")
+    coordinator_def = {
+        "name": "ResearchCoordinator",
+        "description": "Orchestrates research: delegates to search and analysis subagents",
+        "systemPrompt": (
+            "You are a research coordinator. Use the Task tool to spawn "
+            "specialized subagents. Synthesize their results into a final report."
+        ),
+        "tools": ["task_management"],
+        "allowedTools": ["Task", "Glob", "Read"],
+    }
+    print(json.dumps(coordinator_def, indent=2))
+
+    print()
+    print("ANTI-PATTERN: Coordinator missing 'Task' in allowedTools")
+    bad_coordinator_def = {
+        "name": "BrokenCoordinator",
+        "description": "Tries to coordinate -- but cannot spawn subagents",
+        "systemPrompt": "Coordinate research by spawning WebSearchAgent and DocAnalysisAgent...",
+        "allowedTools": ["Glob", "Grep", "Read"],
+    }
+    print(json.dumps(bad_coordinator_def, indent=2))
+    print("  -> RESULT: Task tool calls are BLOCKED at the SDK layer.")
+    print("     The coordinator cannot spawn subagents regardless of instructions.")
+
+    print()
+    print(sep)
+    print("CORRECT: Subagent AgentDefinition (no 'Task' -- not a coordinator)")
+    subagent_def = {
+        "name": "WebSearchAgent",
+        "description": "Searches the web for recent statistics and source URLs",
+        "systemPrompt": "You are a web search specialist. Return structured findings with source URLs.",
+        "tools": ["web_search"],
+        "allowedTools": ["Glob", "Grep", "Read"],
+    }
+    print(json.dumps(subagent_def, indent=2))
+
+    print()
+    print(sep)
+    print("PARALLEL Task calls: SINGLE coordinator response, NOT sequential turns")
+    print()
+    print("CORRECT -- coordinator returns ONE response with 3 Task calls simultaneously:")
+    parallel_response = [
+        {"type": "tool_use", "name": "Task", "id": "task_001",
+         "input": {"agent": "WebSearchAgent",
+                   "prompt": "Find AI adoption stats in music industry (2023-2024)"}},
+        {"type": "tool_use", "name": "Task", "id": "task_002",
+         "input": {"agent": "DocAnalysisAgent",
+                   "prompt": "Analyze IP_Law_Review_2024.pdf for copyright challenges"}},
+        {"type": "tool_use", "name": "Task", "id": "task_003",
+         "input": {"agent": "TrendAgent",
+                   "prompt": "What AI tools are disrupting film production workflows?"}},
+    ]
+    for block in parallel_response:
+        agent_name = block["input"]["agent"]
+        prompt_preview = block["input"]["prompt"][:55]
+        print(f"  [{block['id']}] Task -> {agent_name}: {prompt_preview}...")
+    print("  Wall-clock time = slowest single agent (all 3 run concurrently)")
+    print()
+    print("ANTI-PATTERN -- coordinator spawns agents one per turn (sequential):")
+    print("  Turn 1 response: Task -> WebSearchAgent  (waits for result)")
+    print("  Turn 2 response: Task -> DocAnalysisAgent (waits for result)")
+    print("  Turn 3 response: Task -> TrendAgent       (waits for result)")
+    print("  Wall-clock time = SUM of all agent times (no parallelism!)")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -244,9 +330,18 @@ if __name__ == "__main__":
 
     print()
     print(sep)
+    print("DEMO 5: AgentDefinition structure & allowedTools requirement (SDK config)")
+    print(sep)
+    show_agent_definition_and_allowed_tools()
+
+    print()
+    print(sep)
     print("KEY TAKEAWAYS:")
     print("  1. Subagents have ISOLATED context -- inject ALL needed info explicitly.")
     print("  2. Separate content from metadata (source URLs, page numbers) in handoffs.")
     print("  3. Parallel spawning = multiple Task calls in ONE coordinator response.")
+    print("     Sequential Task calls across turns eliminate the parallelism benefit.")
     print("  4. Coordinator specifies GOALS + QUALITY CRITERIA, not step-by-step steps.")
     print("  5. allowedTools MUST include 'Task' for a coordinator to spawn subagents.")
+    print("     Missing 'Task' blocks subagent spawning at SDK layer, not prompt level.")
+    print("  6. AgentDefinition fields: name, description, systemPrompt, tools, allowedTools.")

@@ -267,6 +267,53 @@ def show_scope_decision() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Community vs custom MCP server decision
+# ---------------------------------------------------------------------------
+def show_community_vs_custom() -> None:
+    sep = "-" * 50
+    print(sep)
+    print("COMMUNITY vs CUSTOM MCP servers: decision rule")
+    print()
+    print("PREFER community MCP servers when:")
+    print("  - A maintained server already exists for the service (Jira, GitHub,")
+    print("    Slack, Postgres, filesystem, web search, etc.)")
+    print("  - You need standard read/write operations the community server covers")
+    print("  - You want to avoid maintenance burden and security review")
+    print("  Examples: @modelcontextprotocol/server-github, mcp-server-postgres,")
+    print("            mcp-obsidian, @modelcontextprotocol/server-brave-search")
+    print()
+    print("BUILD a custom MCP server only when:")
+    print("  - Your team has internal systems with no community equivalent")
+    print("    (proprietary CI/CD API, internal ticketing, legacy SOAP services)")
+    print("  - You need business-specific tool descriptions and parameter names")
+    print("  - You need to enforce team-specific constraints (read-only, audit log,")
+    print("    row-level security) the community server does not provide")
+    print()
+    print("DECISION TABLE:")
+    cases = [
+        ("Use GitHub Issues",     "community",  "@modelcontextprotocol/server-github"),
+        ("Use Jira tickets",      "community",  "jira-mcp (community server)"),
+        ("Query prod DB",         "community",  "mcp-server-postgres (read-only flag)"),
+        ("Internal CI/CD API",    "custom",     "Build: exposes run/cancel/status tools"),
+        ("Proprietary CRM",       "custom",     "Build: CRM tools with auth + audit log"),
+        ("Team config registry",  "custom",     "Build: team-specific schema + constraints"),
+    ]
+    for use_case, decision, rationale in cases:
+        print(f"  {decision.upper():9} | {use_case:28} -> {rationale}")
+
+    print()
+    print("MCP RESOURCES for content catalogs (exam concept):")
+    print("  Resources expose semi-static content at URI addresses.")
+    print("  Use when Claude needs to consult a catalog without a query:")
+    print("    mcp://github/repo/README.md       → project context")
+    print("    mcp://jira/project/SPRNT/backlog   → sprint issue list")
+    print("    mcp://postgres/schema/public       → table/column names")
+    print("  Benefit: reduces exploratory tool calls by giving Claude ambient context.")
+    print("  Rule of thumb: if Claude would always call a tool just to read the")
+    print("  same document, expose it as a Resource instead.")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -321,12 +368,21 @@ if __name__ == "__main__":
 
     print()
     print(sep)
+    print("DEMO 8: Community vs custom MCP decision + Resources for content catalogs")
+    print(sep)
+    show_community_vs_custom()
+
+    print()
+    print(sep)
     print("KEY TAKEAWAYS:")
     print("  1. PROJECT-SCOPED .mcp.json → team tools, version-controlled.")
     print("     USER-SCOPED ~/.claude/mcp.json → personal tools, not committed.")
     print("  2. ALWAYS use ${ENV_VAR} for tokens. NEVER hard-code credentials.")
     print("  3. stdio spawns a subprocess; sse connects to a running HTTP server.")
     print("  4. TOOLS: Claude actively calls with arguments.")
-    print("     RESOURCES: Claude passively reads (URI-addressed documents).")
+    print("     RESOURCES: Claude passively reads (URI-addressed content catalogs).")
+    print("     Use Resources to reduce repeated exploratory tool calls.")
     print("  5. Good MCP tool descriptions follow SEEB rules — poor descriptions")
     print("     lead to low adoption even if the server is technically correct.")
+    print("  6. PREFER community MCP servers over custom ones.")
+    print("     BUILD custom only for internal systems with no community equivalent.")

@@ -184,6 +184,42 @@ def print_arguments_substitution() -> None:
     print("  (e.g., 'If no path given, review the most recently edited file')")
 
 
+def print_built_in_session_commands() -> None:
+    sep = "-" * 50
+    print()
+    print(sep)
+    print("BUILT-IN CLAUDE CODE SESSION COMMANDS (exam-testable)")
+    print(sep)
+    print()
+    print("/memory")
+    print("  What it does: shows which CLAUDE.md and memory files are currently")
+    print("                loaded into this Claude Code session.")
+    print("  When to use:  debug 'why is Claude ignoring my instructions?'")
+    print("                Verify the right project/user/directory CLAUDE.md files")
+    print("                are active. Diagnose inconsistent behavior across sessions.")
+    print("  Example output:")
+    print("    Loaded memory files:")
+    print("      ~/.claude/CLAUDE.md  (user-level)")
+    print("      /project/.claude/CLAUDE.md  (project-level)")
+    print("      /project/src/CLAUDE.md  (directory-level)")
+    print()
+    print("/compact")
+    print("  What it does: summarizes earlier conversation context to free up")
+    print("                context window space in extended Claude Code sessions.")
+    print("  When to use:  when verbose file reads / discovery output fills the")
+    print("                context window, before exploring more of the codebase.")
+    print("  EXAM KEY:     run /compact BEFORE context fills, not after.")
+    print("                Key findings must be in a scratchpad file BEFORE")
+    print("                compaction -- compaction may discard specific details.")
+    print()
+    print("/resume")
+    print("  What it does: resume a prior Claude Code session by session ID.")
+    print("  EXAM ANTI-PATTERN: do NOT use --resume between CI runs.")
+    print("                     Each CI run should start a fresh session.")
+    print("  Valid use: developer resuming a long in-progress refactor after")
+    print("             closing and reopening the IDE.")
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -193,6 +229,7 @@ if __name__ == "__main__":
     print_context_fork()
     print_frontmatter_anatomy()
     print_arguments_substitution()
+    print_built_in_session_commands()
 
     print()
     print("=" * 60)
@@ -214,3 +251,6 @@ if __name__ == "__main__":
     print("     Example: ['Glob', 'Grep', 'Read'] prevents any file modifications.")
     print("  5. Project-scoped: .claude/commands/ and .claude/skills/ (in git).")
     print("     User-scoped: ~/.claude/commands/ and ~/.claude/skills/ (personal).")
+    print("  6. /memory: shows loaded CLAUDE.md files -- diagnose inconsistent behavior.")
+    print("     /compact: summarizes context window -- run BEFORE it fills, not after.")
+    print("     /resume: resumes a session -- do NOT use between CI pipeline runs.")

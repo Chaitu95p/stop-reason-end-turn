@@ -1,20 +1,36 @@
 """
-Module 3 - Task 4.3: Structured Output via tool_use
+Domain 4 - Task 4.3: Structured Output via tool_use
 
-EXAM CONCEPT:
-  Reliability ladder (SANE mnemonic -- least to most reliable):
-    Simple text instruction  ("return JSON")
-    Assistant prefill        (start with {)
-    Natural schema in prompt (describe format)
-    Enforced tool_use        (define input_schema)  <-- MOST RELIABLE
+EXAM CONCEPTS:
+  1. Reliability ladder (SANE) -- least to most reliable:
+       Simple text instruction  → Claude ignores format instructions often
+       Assistant prefill        → start with { to nudge JSON output
+       Natural schema in prompt → describe the format, Claude usually follows
+       Enforced tool_use        → define input_schema; most reliable
 
-  tool_choice options:
-    "auto" -- Claude may return text instead of calling the tool
-    "any"  -- Claude MUST call a tool, can choose which
-    {"type": "tool", "name": "..."}  -- forces a SPECIFIC tool
+  2. tool_choice options:
+       "auto"                       → Claude may return text instead of tool
+       "any"                        → Claude MUST call a tool, can choose which
+       {"type": "tool", "name": "X"} → forces a SPECIFIC named tool
 
-  tool_use eliminates syntax errors (invalid JSON) but NOT semantic errors.
-  Still need validation logic for semantic correctness.
+  3. Nullable fields prevent hallucination: use type: ["string", "null"] for
+     optional fields. Without null, Claude invents plausible-looking values
+     to satisfy required fields. With null, it can honestly report absence.
+
+  4. "other" + detail pattern: include "other" in enums and a parallel
+     <field>_detail string so new categories are captured, not discarded.
+
+  5. "unclear" enum value: signals ambiguity rather than forcing a guess.
+     Enables targeted human review of only the ambiguous cases.
+
+  6. tool_use eliminates syntax errors (invalid JSON) but NOT semantic
+     errors. Always add semantic validation on top of schema validation.
+
+  Mnemonic: SANE
+    S → Simple text instruction    (least reliable)
+    A → Assistant prefill
+    N → Natural schema in prompt
+    E → Enforced tool_use          (most reliable)
 
 Run: uv run python 03_structured_output_tool_use.py
 """
@@ -164,13 +180,80 @@ def show_semantic_error_risk(extracted):
     print("\n  tool_use guarantees valid JSON schema -- semantic checks are YOUR responsibility.")
 
 
+def show_nullable_field_patterns() -> None:
+    sep = "=" * 60
+    print("\n" + sep)
+    print("Nullable fields, 'other' enum, and 'unclear' value patterns")
+    print(sep)
+
+    print()
+    print("ANTI-PATTERN -- required field when data may be absent:")
+    bad_schema_fragment = {
+        "issue_date": {
+            "type": "string",
+            "description": "ISO 8601 date",
+        }
+    }
+    print("  issue_date:", json.dumps(bad_schema_fragment["issue_date"]))
+    print("  -> If document has no date, Claude INVENTS a plausible date.")
+    print("     Hallucinated dates pass schema validation silently.")
+
+    print()
+    print("CORRECT -- nullable field signals legitimate absence:")
+    good_schema_fragment = {
+        "issue_date": {
+            "type": ["string", "null"],
+            "description": "ISO 8601 date, or null if not found in document",
+        }
+    }
+    print("  issue_date:", json.dumps(good_schema_fragment["issue_date"]))
+    print("  -> Claude returns null when date is genuinely missing.")
+    print("     null is distinguishable from a fabricated value.")
+
+    print()
+    print("'other' + detail pattern for extensible enums:")
+    currency_schema = {
+        "currency": {
+            "type": "string",
+            "enum": ["USD", "EUR", "GBP", "CAD", "other"],
+            "description": "Use 'other' for any currency not in the list",
+        },
+        "currency_detail": {
+            "type": ["string", "null"],
+            "description": "Full currency name/code when currency='other', else null",
+        },
+    }
+    print("  currency:", json.dumps(currency_schema["currency"]))
+    print("  currency_detail:", json.dumps(currency_schema["currency_detail"]))
+    print("  -> AUD invoice: currency='other', currency_detail='AUD'")
+    print("     No information is discarded; new values are captured.")
+
+    print()
+    print("'unclear' enum for ambiguous cases:")
+    status_schema = {
+        "payment_status": {
+            "type": "string",
+            "enum": ["paid", "unpaid", "overdue", "unclear"],
+            "description": "'unclear' when payment status cannot be determined from context",
+        }
+    }
+    print("  payment_status:", json.dumps(status_schema["payment_status"]))
+    print("  -> Ambiguous invoice: payment_status='unclear'")
+    print("     Routes to human review instead of forcing a wrong guess.")
+
+
 if __name__ == "__main__":
     print("Demonstrating: Structured Output via tool_use")
-    print("Mnemonic SANE: Simple->Prefill->Natural->Enforced(tool_use most reliable)")
+    print("Mnemonic SANE: Simple->Prefill->Natural->Enforced (tool_use most reliable)")
     extracted = demonstrate_tool_choice_variants()
     show_semantic_error_risk(extracted)
-    print("\n\nKEY TAKEAWAY:")
-    print("  tool_use = guaranteed JSON schema compliance.")
-    print("  auto may skip tool; any must call a tool; forced runs specific tool.")
-    print("  Nullable fields prevent fabrication. Add unclear enum for ambiguous cases.")
-    print("  Always add semantic validation on top of schema validation.")
+    show_nullable_field_patterns()
+    print("\n\nKEY TAKEAWAYS:")
+    print("  1. tool_use = guaranteed JSON schema compliance (syntax only).")
+    print("     auto may skip tool; any must call a tool; forced runs specific tool.")
+    print("  2. Nullable fields prevent hallucination: type: ['string', 'null'] lets")
+    print("     Claude return null rather than invent a plausible-but-wrong value.")
+    print("  3. 'other' + detail pattern: captures unlisted enum values without data loss.")
+    print("  4. 'unclear' enum value: routes ambiguous cases to human review honestly.")
+    print("  5. Always add semantic validation on top of schema validation.")
+    print("     Schema guarantees structure; it does NOT guarantee correctness.")

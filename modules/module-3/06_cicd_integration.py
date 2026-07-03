@@ -206,9 +206,9 @@ def format_ci_output(review: dict) -> str:
 def show_noninteractive_mode() -> None:
     sep = "-" * 50
     print(sep)
-    print("NON-INTERACTIVE MODE: -p flag (CLI equivalent)")
+    print("NON-INTERACTIVE MODE: -p / --print flag (CLI)")
     print()
-    print("In CI pipeline (shell):")
+    print("Basic non-interactive CI usage:")
     print("  claude -p 'Review src/api/ for security issues' \\")
     print("         --output-format json \\")
     print("         --max-turns 5")
@@ -222,7 +222,40 @@ def show_noninteractive_mode() -> None:
     }
     print(json.dumps(simulated_output, indent=2))
     print()
-    print("CI script parses .result field and checks for blocking patterns.")
+    print("CI script parses the .result field and checks for blocking patterns.")
+    print()
+    print("STRUCTURED OUTPUT FLAGS: --output-format json + --json-schema")
+    print("  When you need machine-readable structured output from the CLI:")
+    print()
+    print("  claude -p 'Review this PR for security issues' \\")
+    print("         --output-format json \\")
+    print("         --json-schema ./schemas/ci_review_schema.json \\")
+    print("         --max-turns 5")
+    print()
+    print("  --output-format json  : wraps entire response in JSON envelope")
+    print("                          {cost, duration_ms, stop_reason, result}")
+    print("  --json-schema <path>  : provides a JSON Schema file that tells")
+    print("                          Claude Code to return structured data")
+    print("                          matching that schema in .result")
+    print()
+    print("  Use case: CI script posts review findings as inline PR comments.")
+    print("  The .result is already a parsed object — no regex scraping needed.")
+    print()
+    simulated_structured_output = {
+        "cost": {"input_tokens": 2100, "output_tokens": 890},
+        "duration_ms": 4500,
+        "stop_reason": "end_turn",
+        "result": {
+            "findings": [
+                {"severity": "critical", "file": "src/api/routes/refunds.py",
+                 "description": "Auth removed from POST /refunds endpoint",
+                 "suggestion": "Restore Depends(get_auth) on create_refund"},
+            ],
+            "summary": {"total_new": 1, "critical_count": 1, "should_block_merge": True}
+        }
+    }
+    print("  Structured output example (.result is a parsed object):")
+    print(json.dumps(simulated_structured_output, indent=2))
 
 
 def show_session_isolation() -> None:
@@ -280,12 +313,14 @@ if __name__ == "__main__":
     print(sep)
     print("KEY TAKEAWAYS:")
     print("  1. Non-interactive mode: claude -p 'task' --output-format json")
-    print("     Returns structured JSON with cost, duration, result.")
-    print("  2. Use tool_use for CI output — structured findings are parseable.")
+    print("     Returns JSON envelope: {cost, duration_ms, stop_reason, result}.")
+    print("  2. Add --json-schema <path> to get structured .result matching a schema.")
+    print("     CI scripts read .result directly — no regex scraping needed.")
+    print("  3. Use tool_use for CI output — structured findings are parseable.")
     print("     Prose output is unparseable by CI scripts (fragile string matching).")
-    print("  3. Include previously_flagged issues: avoid re-reporting known issues.")
+    print("  4. Include previously_flagged issues: avoid re-reporting known issues.")
     print("     Only new issues should trigger CI failure or PR block.")
-    print("  4. Session isolation: fresh session per CI run, NO --resume between runs.")
+    print("  5. Session isolation: fresh session per CI run, NO --resume between runs.")
     print("     Pass prior context as structured text, not as a resumed session.")
-    print("  5. CI review schema: severity (critical/high/medium/low/info),")
+    print("  6. CI review schema: severity (critical/high/medium/low/info),")
     print("     category, file, line, description, suggestion, is_new, should_block_merge.")
