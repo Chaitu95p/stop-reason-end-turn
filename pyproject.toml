@@ -7,5 +7,5 @@ dependencies = [
 ]
 
 [tool.uv.workspace]
-members = ["modules/module-*", "exercises/exercise-*"]
+members = ["modules/module-*", "exercises/exercise-*", "mcp-explorer"]
 exclude = ["exercises/exercise-2-team-workflow"]
