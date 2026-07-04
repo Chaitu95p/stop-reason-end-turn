@@ -1,0 +1,895 @@
+{
+  "info": {
+    "_postman_id": "6f2c9e0a-5a4f-4d9b-8a3d-7b1d2e9f4a01",
+    "name": "OpenAI API",
+    "description": "# OpenAI API — Postman Collection\n\nA hand-curated collection covering the most-used REST endpoints of the [OpenAI Platform API](https://platform.openai.com/docs/api-reference). Every request below has a long-form description explaining each body/query parameter, plus a short pre-request script with `//` comments (since JSON request bodies cannot contain inline comments — Postman would send them to the API verbatim and the API would reject them).\n\n## Authentication\n\nAuthentication is configured **once** at the collection level (Bearer token) and inherited by every request. Open the collection's **Authorization** tab to inspect/override it. The token comes from the `OPENAI_API_KEY` environment variable.\n\nOptional headers (set on individual requests when needed):\n\n| Header | Purpose |\n|---|---|\n| `OpenAI-Organization` | Bill usage to a specific org (defaults to your default org). |\n| `OpenAI-Project` | Scope the request to a project under the org. |\n| `OpenAI-Beta` | Required for beta endpoints (e.g. `assistants=v2`). |\n\n## Environment variables\n\nImport the companion environment file (`openai-api.postman_environment.json`) and set these:\n\n| Variable | Required | Default | Description |\n|---|---|---|---|\n| `OPENAI_API_KEY` | ✅ | — | Secret API key from <https://platform.openai.com/api-keys>. Stored as a **secret** type variable. |\n| `BASE_URL` | ✅ | `https://api.openai.com/v1` | Override only if you're proxying or hitting a compatible gateway. |\n| `DEFAULT_CHAT_MODEL` | ⬜ | `gpt-4o-mini` | Used by chat/responses requests. Pick whatever you have access to. |\n| `DEFAULT_EMBEDDING_MODEL` | ⬜ | `text-embedding-3-small` | Used by `/embeddings`. |\n| `DEFAULT_IMAGE_MODEL` | ⬜ | `gpt-image-1` | Used by `/images/*`. |\n| `DEFAULT_TTS_MODEL` | ⬜ | `gpt-4o-mini-tts` | Used by `/audio/speech`. |\n| `DEFAULT_STT_MODEL` | ⬜ | `gpt-4o-mini-transcribe` | Used by `/audio/transcriptions` and `/audio/translations`. |\n| `OPENAI_ORG_ID` | ⬜ | — | Sent as `OpenAI-Organization` header when set (handled by the collection-level pre-request script). |\n| `OPENAI_PROJECT_ID` | ⬜ | — | Sent as `OpenAI-Project` header when set (same script). |\n\n## Quick start\n\n1. **Import** this file and `openai-api.postman_environment.json` into Postman.\n2. Select the `OpenAI` environment from the env switcher (top-right).\n3. Paste your key into `OPENAI_API_KEY` (the **current value** column, not the initial value — keeps the secret off your sync).\n4. Open **Chat Completions → Create chat completion** and hit **Send**.\n\n## Folders\n\n- **Models** — list / retrieve available models.\n- **Chat Completions** — the workhorse `/chat/completions` endpoint with variants: streaming, tool calling, vision, structured outputs.\n- **Responses API** — the newer `/responses` endpoint (stateful, multimodal, tools first-class).\n- **Embeddings** — vector embeddings for retrieval / similarity.\n- **Images** — generate, edit, and vary images.\n- **Audio** — speech synthesis, transcription, translation.\n- **Files** — upload assets used by fine-tuning, batch, assistants, vision, etc.\n- **Moderations** — content safety classifier.\n- **Fine-tuning** — create and manage fine-tuning jobs.\n- **Batches** — async bulk processing at 50% cost.\n\n## Streaming requests\n\nRequests with `\"stream\": true` (e.g. *Streaming chat completion*) return Server-Sent Events. Postman renders the stream in the response viewer line-by-line — leave the request open while events arrive.\n\n## References\n\n- API reference: <https://platform.openai.com/docs/api-reference>\n- Model catalog: <https://platform.openai.com/docs/models>\n- Pricing: <https://openai.com/api/pricing/>\n- Status: <https://status.openai.com>\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{OPENAI_API_KEY}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level pre-request script.",
+          "// Runs before EVERY request in the collection.",
+          "// Purpose: conditionally attach org / project scoping headers when",
+          "// the corresponding environment variables are set, so individual",
+          "// requests don't have to repeat this boilerplate.",
+          "",
+          "const orgId = pm.environment.get('OPENAI_ORG_ID');",
+          "const projectId = pm.environment.get('OPENAI_PROJECT_ID');",
+          "",
+          "if (orgId && orgId.trim() !== '') {",
+          "    pm.request.headers.upsert({ key: 'OpenAI-Organization', value: orgId });",
+          "}",
+          "",
+          "if (projectId && projectId.trim() !== '') {",
+          "    pm.request.headers.upsert({ key: 'OpenAI-Project', value: projectId });",
+          "}",
+          "",
+          "// Sanity-check the API key is set; emit a console warning rather than",
+          "// hard-failing so people can still inspect the prepared request.",
+          "if (!pm.environment.get('OPENAI_API_KEY')) {",
+          "    console.warn('[OpenAI collection] OPENAI_API_KEY is not set in the active environment.');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level test script. Runs after every response.",
+          "// Adds a couple of universally-useful assertions and surfaces",
+          "// OpenAI's standard error envelope when present.",
+          "",
+          "pm.test('Response is JSON or a stream', () => {",
+          "    const ct = pm.response.headers.get('Content-Type') || '';",
+          "    pm.expect(ct).to.match(/json|event-stream|audio|image|octet-stream|text/i);",
+          "});",
+          "",
+          "if ((pm.response.headers.get('Content-Type') || '').includes('application/json')) {",
+          "    try {",
+          "        const body = pm.response.json();",
+          "        if (body && body.error) {",
+          "            console.error('[OpenAI error]', body.error);",
+          "        }",
+          "    } catch (e) {",
+          "        // Non-JSON or empty body — fine, skip.",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "https://api.openai.com/v1",
+      "type": "string",
+      "description": "Fallback base URL. Overridden by the environment's BASE_URL if defined."
+    }
+  ],
+  "item": [
+    {
+      "name": "Models",
+      "description": "Discover which models your key can call and inspect their metadata.",
+      "item": [
+        {
+          "name": "List models",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/models",
+              "host": ["{{BASE_URL}}"],
+              "path": ["models"]
+            },
+            "description": "## `GET /v1/models`\n\nReturns every model the authenticated key has access to, including their IDs, owners, and creation timestamps.\n\n### Use this when\n- Verifying which fine-tuned models are visible.\n- Building a model picker UI.\n- Sanity-checking that a freshly-rotated key works.\n\n### Response shape\n```json\n{\n  \"object\": \"list\",\n  \"data\": [\n    { \"id\": \"gpt-4o-mini\", \"object\": \"model\", \"created\": 1715367049, \"owned_by\": \"system\" }\n  ]\n}\n```\n\n[Docs](https://platform.openai.com/docs/api-reference/models/list)"
+          },
+          "response": []
+        },
+        {
+          "name": "Retrieve a model",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/models/:model",
+              "host": ["{{BASE_URL}}"],
+              "path": ["models", ":model"],
+              "variable": [
+                {
+                  "key": "model",
+                  "value": "{{DEFAULT_CHAT_MODEL}}",
+                  "description": "Model ID, e.g. `gpt-4o-mini`, `text-embedding-3-small`, or a fine-tune like `ft:gpt-4o-mini:acme::abc123`."
+                }
+              ]
+            },
+            "description": "## `GET /v1/models/{model}`\n\nFetch metadata for a single model by ID. Useful when you want to confirm ownership/creation time of a fine-tune or surface model details in tooling.\n\n[Docs](https://platform.openai.com/docs/api-reference/models/retrieve)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Chat Completions",
+      "description": "The `/chat/completions` endpoint: stateless, single-turn-in/single-turn-out. The de-facto OpenAI workhorse — most variations (streaming, tools, vision, structured outputs) are flavors of the same request shape.",
+      "item": [
+        {
+          "name": "Create chat completion",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Body anatomy:",
+                  "//   model       — required; which model to invoke.",
+                  "//   messages    — required; ordered conversation history. Each",
+                  "//                 entry has a role ('system' | 'user' | 'assistant'",
+                  "//                 | 'tool') and content (string or content-parts).",
+                  "//   temperature — 0..2; lower = more deterministic.",
+                  "//   max_tokens  — caps the *completion* length, not total tokens.",
+                  "//                 (Use `max_completion_tokens` on reasoning models.)",
+                  "//   top_p       — nucleus sampling; usually leave at 1.",
+                  "//   n           — how many completions to return.",
+                  "//   stop        — string or array; halts generation when seen.",
+                  "//   user        — opaque end-user identifier for abuse monitoring."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{DEFAULT_CHAT_MODEL}}\",\n  \"messages\": [\n    { \"role\": \"system\", \"content\": \"You are a concise assistant.\" },\n    { \"role\": \"user\",   \"content\": \"Give me a one-sentence definition of a Postman collection.\" }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 200\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/chat/completions",
+              "host": ["{{BASE_URL}}"],
+              "path": ["chat", "completions"]
+            },
+            "description": "## `POST /v1/chat/completions`\n\nThe classic chat endpoint. Send a list of messages, get a single assistant message back.\n\n### Body parameters\n| Field | Type | Required | Description |\n|---|---|---|---|\n| `model` | string | ✅ | Model ID, e.g. `gpt-4o-mini`. |\n| `messages` | array | ✅ | Conversation history. Roles: `system`, `user`, `assistant`, `tool`. |\n| `temperature` | number | ⬜ | Sampling temperature `[0, 2]`. Default `1`. Lower → deterministic. |\n| `top_p` | number | ⬜ | Nucleus sampling. Use `temperature` *or* `top_p`, not both. |\n| `n` | int | ⬜ | How many completions to generate. Default `1`. |\n| `max_tokens` | int | ⬜ | Hard cap on completion tokens. (Reasoning models use `max_completion_tokens`.) |\n| `stop` | string \\| array | ⬜ | Stop sequences. |\n| `presence_penalty`, `frequency_penalty` | number | ⬜ | `[-2, 2]`. |\n| `logit_bias` | object | ⬜ | Token-id → bias `[-100, 100]`. |\n| `response_format` | object | ⬜ | `{ \"type\": \"json_object\" }` or `{ \"type\": \"json_schema\", ... }`. See *Structured outputs*. |\n| `tools`, `tool_choice` | — | ⬜ | See *Tool calling (function calling)* variant. |\n| `stream` | bool | ⬜ | If `true`, returns SSE. See *Streaming chat completion*. |\n| `seed` | int | ⬜ | Best-effort determinism. |\n| `user` | string | ⬜ | Opaque end-user ID. |\n\n### Response\n```json\n{\n  \"id\": \"chatcmpl-...\",\n  \"object\": \"chat.completion\",\n  \"created\": 1730000000,\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"choices\": [\n    {\n      \"index\": 0,\n      \"message\": { \"role\": \"assistant\", \"content\": \"...\" },\n      \"finish_reason\": \"stop\"\n    }\n  ],\n  \"usage\": { \"prompt_tokens\": 23, \"completion_tokens\": 18, \"total_tokens\": 41 }\n}\n```\n\n[Docs](https://platform.openai.com/docs/api-reference/chat/create)"
+          },
+          "response": []
+        },
+        {
+          "name": "Streaming chat completion",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// With stream=true the response is a Server-Sent Events stream:",
+                  "//   data: {\"id\":\"...\",\"choices\":[{\"delta\":{\"content\":\"Hello\"}}]}",
+                  "//   data: {\"id\":\"...\",\"choices\":[{\"delta\":{\"content\":\" world\"}}]}",
+                  "//   data: [DONE]",
+                  "// Each chunk's `delta` carries the *incremental* content to append.",
+                  "// `stream_options.include_usage`: ask the final chunk to include",
+                  "// token usage stats (useful for cost accounting)."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream", "description": "Helps proxies/CDNs route SSE correctly." }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{DEFAULT_CHAT_MODEL}}\",\n  \"messages\": [\n    { \"role\": \"user\", \"content\": \"Count from 1 to 5, one number per line.\" }\n  ],\n  \"stream\": true,\n  \"stream_options\": { \"include_usage\": true }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/chat/completions",
+              "host": ["{{BASE_URL}}"],
+              "path": ["chat", "completions"]
+            },
+            "description": "## Streaming variant\n\nSets `stream: true` and asks for usage stats in the final chunk. Postman renders SSE line-by-line — keep the response panel open while events arrive.\n\nThe terminating chunk is the literal line `data: [DONE]`.\n\n[Streaming docs](https://platform.openai.com/docs/api-reference/chat/streaming)"
+          },
+          "response": []
+        },
+        {
+          "name": "Chat completion with tool calling",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Tool calling (a.k.a. function calling) lets the model emit a",
+                  "// structured request to invoke one of *your* functions.",
+                  "//",
+                  "// Round-trip:",
+                  "//   1. You send `tools` (JSON-schema function defs) + a user msg.",
+                  "//   2. Model responds with assistant message whose `tool_calls`",
+                  "//      array names a function and supplies JSON arguments.",
+                  "//   3. You execute that function locally.",
+                  "//   4. You append the result as a { role: 'tool', tool_call_id, content }",
+                  "//      message and call again. Model produces the user-facing reply.",
+                  "//",
+                  "// `tool_choice`:",
+                  "//   'auto'  — model decides (default when tools are present)",
+                  "//   'none'  — never call a tool",
+                  "//   'required' — must call at least one",
+                  "//   { type:'function', function:{ name:'...' } } — force a specific call"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{DEFAULT_CHAT_MODEL}}\",\n  \"messages\": [\n    { \"role\": \"user\", \"content\": \"What's the weather in Tokyo right now?\" }\n  ],\n  \"tools\": [\n    {\n      \"type\": \"function\",\n      \"function\": {\n        \"name\": \"get_current_weather\",\n        \"description\": \"Fetch the current weather for a location.\",\n        \"parameters\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"location\": { \"type\": \"string\", \"description\": \"City and optional country, e.g. 'Tokyo, JP'.\" },\n            \"unit\":     { \"type\": \"string\", \"enum\": [\"celsius\", \"fahrenheit\"], \"default\": \"celsius\" }\n          },\n          \"required\": [\"location\"],\n          \"additionalProperties\": false\n        }\n      }\n    }\n  ],\n  \"tool_choice\": \"auto\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/chat/completions",
+              "host": ["{{BASE_URL}}"],
+              "path": ["chat", "completions"]
+            },
+            "description": "## Tool calling (function calling)\n\nThe model returns a `tool_calls` array instead of (or alongside) a content string. Your app executes the call and continues the conversation with a `role: \"tool\"` message containing the result.\n\nSee `tool_choice` options in the pre-request script.\n\n[Tool calling docs](https://platform.openai.com/docs/guides/function-calling)"
+          },
+          "response": []
+        },
+        {
+          "name": "Chat completion with vision",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{DEFAULT_CHAT_MODEL}}\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        { \"type\": \"text\", \"text\": \"Describe what's in this picture in one sentence.\" },\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png\",\n            \"detail\": \"auto\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/chat/completions",
+              "host": ["{{BASE_URL}}"],
+              "path": ["chat", "completions"]
+            },
+            "description": "## Vision input\n\nWhen `content` is an array of *content parts*, you can mix text and images. Images can be remote URLs **or** base64 data URLs (`data:image/png;base64,...`).\n\n`image_url.detail`:\n- `\"low\"`  — single 512×512 tile (cheap).\n- `\"high\"` — multi-tile, higher token cost.\n- `\"auto\"` — model decides (default).\n\nRequires a vision-capable model (e.g. `gpt-4o`, `gpt-4o-mini`, `gpt-4-turbo`).\n\n[Vision docs](https://platform.openai.com/docs/guides/vision)"
+          },
+          "response": []
+        },
+        {
+          "name": "Chat completion with structured outputs (JSON schema)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// `response_format.type = \"json_schema\"` constrains the output to",
+                  "// match a JSON Schema *exactly* (no escapes, no hallucinated fields).",
+                  "// `strict: true` enables 100% schema adherence — required fields,",
+                  "// no additional properties, enum-only values, etc.",
+                  "//",
+                  "// For looser \"please return JSON\" use `response_format: { type: 'json_object' }`."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{DEFAULT_CHAT_MODEL}}\",\n  \"messages\": [\n    { \"role\": \"system\", \"content\": \"Extract event details from the user message.\" },\n    { \"role\": \"user\",   \"content\": \"Team offsite on June 20, 2026 in Lisbon. RSVP by June 1.\" }\n  ],\n  \"response_format\": {\n    \"type\": \"json_schema\",\n    \"json_schema\": {\n      \"name\": \"event_extraction\",\n      \"strict\": true,\n      \"schema\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"title\":    { \"type\": \"string\" },\n          \"date\":     { \"type\": \"string\", \"description\": \"ISO 8601 date.\" },\n          \"location\": { \"type\": \"string\" },\n          \"rsvp_by\":  { \"type\": \"string\", \"description\": \"ISO 8601 date.\" }\n        },\n        \"required\": [\"title\", \"date\", \"location\", \"rsvp_by\"],\n        \"additionalProperties\": false\n      }\n    }\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/chat/completions",
+              "host": ["{{BASE_URL}}"],
+              "path": ["chat", "completions"]
+            },
+            "description": "## Structured outputs\n\nForces the assistant message to be valid JSON matching the supplied schema. With `strict: true`, the model is guaranteed (subject to OpenAI's enforcement) to never emit fields you didn't declare.\n\n[Structured outputs docs](https://platform.openai.com/docs/guides/structured-outputs)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Responses API",
+      "description": "The newer `/responses` endpoint. Stateful (server-side conversation state via `previous_response_id`), multimodal, and treats tools (function/web/file/computer use) as first-class. Recommended over `/chat/completions` for new builds.",
+      "item": [
+        {
+          "name": "Create response",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{DEFAULT_CHAT_MODEL}}\",\n  \"input\": \"Write a haiku about API testing.\",\n  \"instructions\": \"You are a terse poet. Output only the haiku, no commentary.\",\n  \"temperature\": 0.8,\n  \"max_output_tokens\": 200,\n  \"store\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/responses",
+              "host": ["{{BASE_URL}}"],
+              "path": ["responses"]
+            },
+            "description": "## `POST /v1/responses`\n\n### Body parameters\n| Field | Type | Description |\n|---|---|---|\n| `model` | string | Required. |\n| `input` | string \\| array | Required. A bare string is shorthand for `[{ role: 'user', content: [...]}]`. Use array form for multi-part input (text + image + file). |\n| `instructions` | string | System-style prompt; replaces the system message. |\n| `previous_response_id` | string | Continue a stored prior response — the server replays its history. |\n| `tools` | array | Mix of `{type:'function',...}`, `{type:'web_search_preview'}`, `{type:'file_search'}`, `{type:'computer_use'}`, etc. |\n| `tool_choice` | string \\| object | Same semantics as chat. |\n| `temperature`, `top_p`, `max_output_tokens` | numbers | As you'd expect. |\n| `store` | bool | Persist the response server-side so you can chain via `previous_response_id`. |\n| `stream` | bool | Emits typed SSE events (`response.created`, `response.output_text.delta`, `response.completed`, …). |\n| `metadata` | object | Up to 16 key/value pairs you can later filter on. |\n\n### Response\nContains `output[]` (array of typed items: messages, tool calls, refusals) and convenience accessor `output_text`.\n\n[Responses docs](https://platform.openai.com/docs/api-reference/responses)"
+          },
+          "response": []
+        },
+        {
+          "name": "Retrieve response",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/responses/:response_id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["responses", ":response_id"],
+              "variable": [
+                {
+                  "key": "response_id",
+                  "value": "resp_abc123",
+                  "description": "ID returned by *Create response* (only if you set `store: true`)."
+                }
+              ]
+            },
+            "description": "Fetch a stored response by ID. Useful for resuming a multi-turn flow from a different client.\n\n[Docs](https://platform.openai.com/docs/api-reference/responses/get)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete response",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/responses/:response_id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["responses", ":response_id"],
+              "variable": [
+                {
+                  "key": "response_id",
+                  "value": "resp_abc123"
+                }
+              ]
+            },
+            "description": "Permanently delete a stored response and its associated state.\n\n[Docs](https://platform.openai.com/docs/api-reference/responses/delete)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Embeddings",
+      "description": "Turn text into vectors for retrieval, clustering, or semantic search.",
+      "item": [
+        {
+          "name": "Create embeddings",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// `input` can be:",
+                  "//   - a string                (1 embedding back)",
+                  "//   - an array of strings     (N embeddings back, batched)",
+                  "//   - an array of token-id arrays (rare; precomputed tokenization)",
+                  "//",
+                  "// `dimensions` only applies to `text-embedding-3-*` models — you can",
+                  "// trim to fewer dims (e.g. 256, 512, 1024) to save vector-DB storage.",
+                  "// `encoding_format`: 'float' (default) or 'base64' for compact transport."
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{DEFAULT_EMBEDDING_MODEL}}\",\n  \"input\": [\n    \"Postman is an API platform.\",\n    \"Embeddings turn text into vectors.\"\n  ],\n  \"encoding_format\": \"float\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/embeddings",
+              "host": ["{{BASE_URL}}"],
+              "path": ["embeddings"]
+            },
+            "description": "## `POST /v1/embeddings`\n\n### Response\n```json\n{\n  \"object\": \"list\",\n  \"data\": [\n    { \"index\": 0, \"object\": \"embedding\", \"embedding\": [0.012, -0.041, ...] }\n  ],\n  \"model\": \"text-embedding-3-small\",\n  \"usage\": { \"prompt_tokens\": 12, \"total_tokens\": 12 }\n}\n```\n\n[Docs](https://platform.openai.com/docs/api-reference/embeddings)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Images",
+      "description": "Generate, edit, and create variations of images.",
+      "item": [
+        {
+          "name": "Generate image",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{DEFAULT_IMAGE_MODEL}}\",\n  \"prompt\": \"A friendly cartoon postman robot delivering API calls, flat vector art\",\n  \"n\": 1,\n  \"size\": \"1024x1024\",\n  \"quality\": \"high\",\n  \"output_format\": \"png\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/images/generations",
+              "host": ["{{BASE_URL}}"],
+              "path": ["images", "generations"]
+            },
+            "description": "## `POST /v1/images/generations`\n\n### Body parameters\n| Field | Description |\n|---|---|\n| `model` | `gpt-image-1` (recommended) or legacy `dall-e-3` / `dall-e-2`. |\n| `prompt` | Free-text description. `gpt-image-1` accepts up to 32k chars. |\n| `n` | How many images. |\n| `size` | `1024x1024`, `1024x1536`, `1536x1024`, `auto`. (DALL·E 3 sizes differ.) |\n| `quality` | `low` / `medium` / `high` / `auto`. Cost scales with quality. |\n| `output_format` | `png` (default), `jpeg`, `webp` (gpt-image-1 only). |\n| `background` | `transparent` / `opaque` / `auto`. Transparent requires PNG/WebP. |\n| `response_format` | `url` (DALL·E only) or `b64_json`. `gpt-image-1` always returns base64. |\n\n[Docs](https://platform.openai.com/docs/api-reference/images/create)"
+          },
+          "response": []
+        },
+        {
+          "name": "Edit image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "model", "value": "{{DEFAULT_IMAGE_MODEL}}", "type": "text", "description": "Model ID. `gpt-image-1` recommended." },
+                { "key": "image", "type": "file", "src": [], "description": "PNG/JPEG/WebP, up to 25 MB. Multiple `image` fields accepted (gpt-image-1)." },
+                { "key": "mask", "type": "file", "src": [], "description": "Optional. Same size as `image`. Transparent pixels = areas to edit." },
+                { "key": "prompt", "value": "Replace the background with a sunset over mountains.", "type": "text" },
+                { "key": "n", "value": "1", "type": "text" },
+                { "key": "size", "value": "1024x1024", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/images/edits",
+              "host": ["{{BASE_URL}}"],
+              "path": ["images", "edits"]
+            },
+            "description": "## `POST /v1/images/edits`\n\nMultipart form. Provide `image` (and optionally `mask`) plus a `prompt` describing the edit.\n\nIn Postman, click the **Select Files** button on each `image` / `mask` row to attach.\n\n[Docs](https://platform.openai.com/docs/api-reference/images/createEdit)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create image variation",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "model", "value": "dall-e-2", "type": "text", "description": "Variations are only supported by `dall-e-2` at the moment." },
+                { "key": "image", "type": "file", "src": [], "description": "Square PNG, < 4 MB." },
+                { "key": "n", "value": "1", "type": "text" },
+                { "key": "size", "value": "1024x1024", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/images/variations",
+              "host": ["{{BASE_URL}}"],
+              "path": ["images", "variations"]
+            },
+            "description": "## `POST /v1/images/variations`\n\nProduce a riff on a source image without a text prompt. DALL·E 2 only.\n\n[Docs](https://platform.openai.com/docs/api-reference/images/createVariation)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Audio",
+      "description": "TTS, transcription, and translation.",
+      "item": [
+        {
+          "name": "Create speech (TTS)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"{{DEFAULT_TTS_MODEL}}\",\n  \"input\": \"Hello from the OpenAI text-to-speech endpoint.\",\n  \"voice\": \"alloy\",\n  \"response_format\": \"mp3\",\n  \"speed\": 1.0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/audio/speech",
+              "host": ["{{BASE_URL}}"],
+              "path": ["audio", "speech"]
+            },
+            "description": "## `POST /v1/audio/speech`\n\nReturns raw audio bytes (not JSON). In Postman, click **Save Response → Save to a file** to listen.\n\n### Body parameters\n| Field | Description |\n|---|---|\n| `model` | `gpt-4o-mini-tts`, `tts-1`, or `tts-1-hd`. |\n| `input` | Up to 4096 chars. |\n| `voice` | `alloy`, `ash`, `ballad`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer`, `verse`. |\n| `response_format` | `mp3` (default), `opus`, `aac`, `flac`, `wav`, `pcm`. |\n| `speed` | `0.25`–`4.0`. |\n| `instructions` | (gpt-4o-mini-tts only) free-form delivery direction, e.g. \"calm, professional\". |\n\n[Docs](https://platform.openai.com/docs/api-reference/audio/createSpeech)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create transcription",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [], "description": "Audio file: mp3, mp4, mpeg, mpga, m4a, wav, webm. Max 25 MB." },
+                { "key": "model", "value": "{{DEFAULT_STT_MODEL}}", "type": "text" },
+                { "key": "language", "value": "en", "type": "text", "description": "Optional ISO-639-1 hint." },
+                { "key": "prompt", "value": "", "type": "text", "description": "Optional. Style/vocabulary hint; must match transcript language." },
+                { "key": "response_format", "value": "json", "type": "text", "description": "json | text | srt | verbose_json | vtt." },
+                { "key": "temperature", "value": "0", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/audio/transcriptions",
+              "host": ["{{BASE_URL}}"],
+              "path": ["audio", "transcriptions"]
+            },
+            "description": "## `POST /v1/audio/transcriptions`\n\nSpeech → text in the original language.\n\n[Docs](https://platform.openai.com/docs/api-reference/audio/createTranscription)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create translation",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [], "description": "Non-English audio file." },
+                { "key": "model", "value": "whisper-1", "type": "text", "description": "Translation currently requires `whisper-1`." },
+                { "key": "prompt", "value": "", "type": "text" },
+                { "key": "response_format", "value": "json", "type": "text" },
+                { "key": "temperature", "value": "0", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/audio/translations",
+              "host": ["{{BASE_URL}}"],
+              "path": ["audio", "translations"]
+            },
+            "description": "## `POST /v1/audio/translations`\n\nNon-English speech → English text.\n\n[Docs](https://platform.openai.com/docs/api-reference/audio/createTranslation)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Files",
+      "description": "Upload and manage files used by fine-tuning, batch, assistants, vision, etc.",
+      "item": [
+        {
+          "name": "List files",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/files?purpose=&limit=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["files"],
+              "query": [
+                { "key": "purpose", "value": "", "description": "Filter: `assistants`, `batch`, `fine-tune`, `vision`, `user_data`, `evals`. Leave blank for all." },
+                { "key": "limit", "value": "20", "description": "1–10000. Default 10000." },
+                { "key": "order", "value": "desc", "description": "`asc` or `desc` by created_at.", "disabled": true },
+                { "key": "after", "value": "", "description": "Cursor: file ID to paginate after.", "disabled": true }
+              ]
+            },
+            "description": "List uploaded files visible to the active org/project.\n\n[Docs](https://platform.openai.com/docs/api-reference/files/list)"
+          },
+          "response": []
+        },
+        {
+          "name": "Upload file",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": [], "description": "The file to upload." },
+                { "key": "purpose", "value": "assistants", "type": "text", "description": "How OpenAI will use this file. Drives validation: `fine-tune` requires JSONL with the right shape; `batch` requires the batch JSONL format; `vision` accepts images; `assistants` is general-purpose; `user_data` is generic; `evals` for the evals API." }
+              ]
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/files",
+              "host": ["{{BASE_URL}}"],
+              "path": ["files"]
+            },
+            "description": "## `POST /v1/files`\n\nMax file size: 512 MB. Org has a 100 GB total cap.\n\n[Docs](https://platform.openai.com/docs/api-reference/files/create)"
+          },
+          "response": []
+        },
+        {
+          "name": "Retrieve file",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/files/:file_id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["files", ":file_id"],
+              "variable": [
+                { "key": "file_id", "value": "file-abc123" }
+              ]
+            },
+            "description": "Get metadata for one file (status, bytes, purpose, created_at).\n\n[Docs](https://platform.openai.com/docs/api-reference/files/retrieve)"
+          },
+          "response": []
+        },
+        {
+          "name": "Retrieve file content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/files/:file_id/content",
+              "host": ["{{BASE_URL}}"],
+              "path": ["files", ":file_id", "content"],
+              "variable": [
+                { "key": "file_id", "value": "file-abc123" }
+              ]
+            },
+            "description": "Download the raw bytes of a stored file.\n\n[Docs](https://platform.openai.com/docs/api-reference/files/retrieve-contents)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete file",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/files/:file_id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["files", ":file_id"],
+              "variable": [
+                { "key": "file_id", "value": "file-abc123" }
+              ]
+            },
+            "description": "Permanently delete a file.\n\n[Docs](https://platform.openai.com/docs/api-reference/files/delete)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Moderations",
+      "description": "Classify whether content violates OpenAI's usage policies.",
+      "item": [
+        {
+          "name": "Create moderation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"omni-moderation-latest\",\n  \"input\": [\n    { \"type\": \"text\", \"text\": \"I want to plant a tree in my backyard.\" }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/moderations",
+              "host": ["{{BASE_URL}}"],
+              "path": ["moderations"]
+            },
+            "description": "## `POST /v1/moderations`\n\nFree to call. `omni-moderation-latest` is multimodal (text + image). Returns per-category booleans and scores.\n\n[Docs](https://platform.openai.com/docs/api-reference/moderations)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Fine-tuning",
+      "description": "Create and manage fine-tuning jobs that turn a base model into a domain-specialized model.",
+      "item": [
+        {
+          "name": "Create fine-tuning job",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model\": \"gpt-4o-mini-2024-07-18\",\n  \"training_file\": \"file-abc123\",\n  \"validation_file\": null,\n  \"suffix\": \"my-experiment\",\n  \"method\": {\n    \"type\": \"supervised\",\n    \"supervised\": {\n      \"hyperparameters\": {\n        \"n_epochs\": \"auto\",\n        \"batch_size\": \"auto\",\n        \"learning_rate_multiplier\": \"auto\"\n      }\n    }\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/fine_tuning/jobs",
+              "host": ["{{BASE_URL}}"],
+              "path": ["fine_tuning", "jobs"]
+            },
+            "description": "## `POST /v1/fine_tuning/jobs`\n\n`training_file` must be a previously-uploaded file with `purpose=\"fine-tune\"` (JSONL of chat-shaped examples).\n\nSet `suffix` to give the resulting model a memorable name: `ft:gpt-4o-mini-2024-07-18:org::my-experiment:abc123`.\n\n[Docs](https://platform.openai.com/docs/api-reference/fine-tuning/create)"
+          },
+          "response": []
+        },
+        {
+          "name": "List fine-tuning jobs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/fine_tuning/jobs?limit=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["fine_tuning", "jobs"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "after", "value": "", "description": "Cursor for pagination.", "disabled": true }
+              ]
+            },
+            "description": "List jobs visible to the active org/project.\n\n[Docs](https://platform.openai.com/docs/api-reference/fine-tuning/list)"
+          },
+          "response": []
+        },
+        {
+          "name": "Retrieve fine-tuning job",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/fine_tuning/jobs/:fine_tuning_job_id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["fine_tuning", "jobs", ":fine_tuning_job_id"],
+              "variable": [
+                { "key": "fine_tuning_job_id", "value": "ftjob-abc123" }
+              ]
+            },
+            "description": "Get status (`validating_files`, `queued`, `running`, `succeeded`, `failed`, `cancelled`) and final model ID if done.\n\n[Docs](https://platform.openai.com/docs/api-reference/fine-tuning/retrieve)"
+          },
+          "response": []
+        },
+        {
+          "name": "List job events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/fine_tuning/jobs/:fine_tuning_job_id/events?limit=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["fine_tuning", "jobs", ":fine_tuning_job_id", "events"],
+              "variable": [
+                { "key": "fine_tuning_job_id", "value": "ftjob-abc123" }
+              ],
+              "query": [
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "description": "Stream of human-readable status events for a job (validation, epoch progress, etc.).\n\n[Docs](https://platform.openai.com/docs/api-reference/fine-tuning/list-events)"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel fine-tuning job",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/fine_tuning/jobs/:fine_tuning_job_id/cancel",
+              "host": ["{{BASE_URL}}"],
+              "path": ["fine_tuning", "jobs", ":fine_tuning_job_id", "cancel"],
+              "variable": [
+                { "key": "fine_tuning_job_id", "value": "ftjob-abc123" }
+              ]
+            },
+            "description": "Cancel a queued or running job. No body required.\n\n[Docs](https://platform.openai.com/docs/api-reference/fine-tuning/cancel)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Batches",
+      "description": "Submit a JSONL of API requests to be processed asynchronously within 24h at 50% cost. Great for offline embeddings, scoring, etc.",
+      "item": [
+        {
+          "name": "Create batch",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"input_file_id\": \"file-abc123\",\n  \"endpoint\": \"/v1/chat/completions\",\n  \"completion_window\": \"24h\",\n  \"metadata\": {\n    \"job_name\": \"nightly-summaries\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/batches",
+              "host": ["{{BASE_URL}}"],
+              "path": ["batches"]
+            },
+            "description": "## `POST /v1/batches`\n\n### Body parameters\n| Field | Description |\n|---|---|\n| `input_file_id` | File uploaded with `purpose=\"batch\"`. Each JSONL line is a request: `{ \"custom_id\": \"req-1\", \"method\": \"POST\", \"url\": \"/v1/chat/completions\", \"body\": { ... } }`. |\n| `endpoint` | `/v1/chat/completions`, `/v1/embeddings`, `/v1/completions`, or `/v1/responses`. |\n| `completion_window` | Currently only `24h`. |\n| `metadata` | Up to 16 string KV pairs. |\n\nWhen complete the batch object exposes `output_file_id` / `error_file_id`, which you download with **Files → Retrieve file content**.\n\n[Docs](https://platform.openai.com/docs/api-reference/batch/create)"
+          },
+          "response": []
+        },
+        {
+          "name": "Retrieve batch",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/batches/:batch_id",
+              "host": ["{{BASE_URL}}"],
+              "path": ["batches", ":batch_id"],
+              "variable": [
+                { "key": "batch_id", "value": "batch_abc123" }
+              ]
+            },
+            "description": "Get status: `validating`, `failed`, `in_progress`, `finalizing`, `completed`, `expired`, `cancelling`, `cancelled`.\n\n[Docs](https://platform.openai.com/docs/api-reference/batch/retrieve)"
+          },
+          "response": []
+        },
+        {
+          "name": "List batches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/batches?limit=20",
+              "host": ["{{BASE_URL}}"],
+              "path": ["batches"],
+              "query": [
+                { "key": "limit", "value": "20" },
+                { "key": "after", "value": "", "description": "Cursor for pagination.", "disabled": true }
+              ]
+            },
+            "description": "List your batches, newest first.\n\n[Docs](https://platform.openai.com/docs/api-reference/batch/list)"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel batch",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/batches/:batch_id/cancel",
+              "host": ["{{BASE_URL}}"],
+              "path": ["batches", ":batch_id", "cancel"],
+              "variable": [
+                { "key": "batch_id", "value": "batch_abc123" }
+              ]
+            },
+            "description": "Best-effort cancel. Already-completed lines remain in the output file.\n\n[Docs](https://platform.openai.com/docs/api-reference/batch/cancel)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
