@@ -1,0 +1,7 @@
+[project]
+name = "exercise-5-developer-productivity"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.115.1",
+]

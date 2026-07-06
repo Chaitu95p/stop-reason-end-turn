@@ -16,6 +16,8 @@ members = [
     "exercise-1-multi-tool-agent",
     "exercise-3-extraction-pipeline",
     "exercise-4-multi-agent-research",
+    "exercise-5-developer-productivity",
+    "exercise-6-cicd-pipeline",
     "mcp-explorer",
     "prompt-engineering-structured-output",
     "stop-reason-end-turn",
@@ -403,6 +405,28 @@ requires-dist = [
 name = "exercise-4-multi-agent-research"
 version = "0.1.0"
 source = { virtual = "exercises/exercise-4-multi-agent-research" }
+dependencies = [
+    { name = "anthropic" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "anthropic", specifier = ">=0.115.1" }]
+
+[[package]]
+name = "exercise-5-developer-productivity"
+version = "0.1.0"
+source = { virtual = "exercises/exercise-5-developer-productivity" }
+dependencies = [
+    { name = "anthropic" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "anthropic", specifier = ">=0.115.1" }]
+
+[[package]]
+name = "exercise-6-cicd-pipeline"
+version = "0.1.0"
+source = { virtual = "exercises/exercise-6-cicd-pipeline" }
 dependencies = [
     { name = "anthropic" },
 ]
