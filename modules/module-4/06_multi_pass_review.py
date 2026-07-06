@@ -1,5 +1,5 @@
 """
-Module 3 - Task 4.6: Multi-Instance & Multi-Pass Review
+Domain 4 - Task 4.6: Multi-Instance & Multi-Pass Review
 
 EXAM CONCEPT:
   Self-review limitation: the model retains its generation reasoning context,

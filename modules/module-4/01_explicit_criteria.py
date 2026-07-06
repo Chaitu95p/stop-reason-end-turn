@@ -1,5 +1,5 @@
 """
-Module 3 - Task 4.1: Explicit Criteria Over Vague Instructions
+Domain 4 - Task 4.1: Explicit Criteria Over Vague Instructions
 
 EXAM CONCEPTS:
   1. Vague instructions -> inconsistent results.

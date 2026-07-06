@@ -1,5 +1,5 @@
 """
-Module 3 - Task 4.2: Few-Shot Prompting for Consistency
+Domain 4 - Task 4.2: Few-Shot Prompting for Consistency
 
 EXAM CONCEPTS:
   Few-shot (2-5 examples): most effective technique for consistent output.

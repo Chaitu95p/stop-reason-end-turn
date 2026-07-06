@@ -1,5 +1,5 @@
 """
-Module 3 - Task 4.5: Batch Processing Strategies
+Domain 4 - Task 4.5: Batch Processing Strategies
 
 EXAM CONCEPTS:
   Message Batches API facts (memorize all):

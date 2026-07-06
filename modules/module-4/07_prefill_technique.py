@@ -1,5 +1,11 @@
 """
-Module 3 - Bonus: Prefill Technique & Temperature Settings
+Domain 4 - Bonus (OUT OF SCOPE): Prefill Technique & Temperature Settings
+
+WARNING: This script covers techniques NOT listed in the CCA-F in-scope topics.
+  Prefill technique, temperature settings, and XML system prompt architecture do
+  NOT appear in the 27 exam task statements or the official in-scope topics list.
+  Study this ONLY after you have fully covered the 27 in-scope task statements.
+  Do not spend exam prep time on this at the expense of in-scope material.
 
 EXAM CONCEPTS:
 

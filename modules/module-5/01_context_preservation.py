@@ -17,11 +17,19 @@ EXAM CONCEPTS:
   5. Scratchpad pattern: agent writes key findings to a structured block,
      re-reads it at start of each reasoning step.
 
-  Mnemonic: FACT
+  6. Upstream agent modification for downstream context budgets:
+     When downstream synthesis agents have limited context, modify UPSTREAM
+     subagents to return compact structured data (key facts, citations,
+     relevance scores) INSTEAD of verbose content and reasoning chains.
+     This is an architectural decision — change what the upstream agent returns,
+     not just how the downstream agent filters it.
+
+  Mnemonic: FACT-U
     Facts-block (persistent structured key facts)
     Aggregate-trim (trim verbose tool output to relevant fields)
     Cite-positions (critical info at start or end, not middle)
     Track (maintain case facts across tool calls)
+    Upstream-compact (modify upstream agents to return structured summaries)
 
 Run: uv run python 01_context_preservation.py
 """
@@ -267,6 +275,59 @@ if __name__ == "__main__":
 
     print()
     print(sep)
+    print("DEMO 5: Upstream agent modification for downstream context budgets")
+    print(sep)
+    print("EXAM CONCEPT: When a DOWNSTREAM synthesis agent has a limited context budget,")
+    print("the fix is to change what the UPSTREAM subagents return -- not to filter")
+    print("on the downstream side.")
+    print()
+    print("ANTI-PATTERN: upstream agent returns verbose content, downstream tries to filter")
+    print()
+
+    upstream_verbose = {
+        "source": "Annual Market Report 2023",
+        "full_text": (
+            "The cloud services market grew by 23% in 2022, reaching $580B globally. "
+            "Enterprise adoption of AI tools reached 34% of Fortune 500 companies. "
+            "Remote work adoption stabilized at 28% of workforce permanently working remotely. "
+            "Q1 saw growth in Asia-Pacific... Q2 showed deceleration in EMEA... "
+            "[2000 more words of regional breakdown, methodology, appendices...]"
+        ),
+        "reasoning": (
+            "I found this source by searching for 'cloud market growth'. I also checked "
+            "3 other sources that were less relevant. The main finding appears on page 4..."
+        ),
+    }
+
+    upstream_compact = {
+        "source": "Annual Market Report 2023",
+        "publication_date": "2023-06",
+        "key_facts": [
+            {"claim": "Cloud market grew 23% in 2022", "stat": "$580B total"},
+            {"claim": "Enterprise AI adoption 34%", "segment": "Fortune 500"},
+        ],
+        "relevance_score": 0.91,
+        "citation_page": 4,
+    }
+
+    verbose_size = len(str(upstream_verbose))
+    compact_size = len(str(upstream_compact))
+    print(f"Verbose upstream return: {verbose_size} chars")
+    print(f"Compact upstream return: {compact_size} chars ({100*(1-compact_size/verbose_size):.0f}% reduction)")
+    print()
+    print("CORRECT: modify the upstream agent's output schema to return structured")
+    print("facts + citations + relevance score instead of full text + reasoning chain.")
+    print()
+    print("Compact output (what upstream should return):")
+    print(json.dumps(upstream_compact, indent=2))
+    print()
+    print("EXAM KEY: This is an ARCHITECTURAL decision -- change the upstream agent's")
+    print("return format, not just how the downstream agent filters its input.")
+    print("The downstream synthesis agent's context budget determines what the")
+    print("upstream agent is allowed to return.")
+
+    print()
+    print(sep)
     print("KEY TAKEAWAYS:")
     print("  1. Progressive summarization loses precise numbers after 2-3 passes.")
     print("     Solution: extract critical facts into a structured block first.")
@@ -275,4 +336,8 @@ if __name__ == "__main__":
     print("  3. Place CRITICAL facts at START or END of context, never middle.")
     print("     Lost-in-the-middle: Claude's attention degrades for buried content.")
     print("  4. Case facts block: structured dict survives compression better than prose.")
-    print("  Mnemonic FACT: Facts-block, Aggregate-trim, Cite-positions, Track.")
+    print("  5. Upstream modification: when downstream has a limited context budget,")
+    print("     change what UPSTREAM agents return (key facts + citations + relevance")
+    print("     scores) instead of verbose text + reasoning chains.")
+    print("     This is architectural -- change the return schema, not the downstream filter.")
+    print("  Mnemonic FACT-U: Facts-block, Aggregate-trim, Cite-positions, Track, Upstream-compact.")
