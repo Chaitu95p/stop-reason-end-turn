@@ -25,6 +25,12 @@ EXAM CONCEPTS:
   5. Plan content: numbered steps, files affected, architectural decisions,
      trade-offs considered. Plan is approved by the user before coding begins.
 
+  6. Explore subagent: for open-ended discovery tasks (find all callers of X,
+     map the full module structure), spawn an Explore subagent to do the
+     verbose reading WITHOUT filling the main session's context window.
+     Use during the plan-mode investigation phase, before writing the plan.
+     Explore runs read-only and returns a compact summary.
+
 Run: uv run python 04_plan_vs_direct.py
 """
 
@@ -193,6 +199,65 @@ Shall I proceed with this plan?
 
 
 # ---------------------------------------------------------------------------
+# DEMO 3: Explore subagent pattern (simulated)
+# ---------------------------------------------------------------------------
+def demo_explore_subagent() -> None:
+    sep = "-" * 50
+    print(sep)
+    print("DEMO 3: Explore subagent for plan-mode investigation")
+    print()
+    print("SCENARIO: Plan 'Add rate limiting to all API endpoints'")
+    print()
+    print("Without Explore subagent (fills main session context):")
+    print("  Main session reads every route file, middleware, config file...")
+    print("  All file content accumulates in context window.")
+    print("  By the time the plan is written, context is 60% full.")
+    print()
+    print("With Explore subagent (protects main session):")
+    print("  Main session: spawn Explore subagent with goal:")
+    print('  "Find all API route files and count endpoints in each."')
+    print()
+
+    # Simulate the Explore subagent doing the discovery work
+    explore_task = (
+        "Given a project with FastAPI routes, list all endpoint files "
+        "and estimate how many routes each contains. "
+        "Return a compact summary only."
+    )
+    resp = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=300,
+        system=(
+            "You are an Explore subagent. Your goal is codebase discovery — "
+            "read files and return a COMPACT structured summary. "
+            "Never return raw file content. Synthesize into a short list." + NL
+            + "Simulated project structure:" + NL
+            + "  src/api/routes/refunds.py    (3 endpoints: POST /refunds, GET /refunds/{id}, DELETE /refunds/{id})" + NL
+            + "  src/api/routes/credits.py    (2 endpoints: POST /credits, GET /credits/{customer_id})" + NL
+            + "  src/api/routes/customers.py  (4 endpoints: CRUD + GET /customers/{id}/orders)" + NL
+            + "  src/api/middleware.py        (auth middleware, no routes)"
+        ),
+        messages=[{"role": "user", "content": explore_task}],
+    )
+    summary = next((b.text for b in resp.content if hasattr(b, "text")), "")
+
+    print("  Explore subagent returns compact summary:")
+    print(f"  {summary[:400]}")
+    print()
+    print("  Main session receives summary (not raw file content).")
+    print("  Main session context window: largely unaffected.")
+    print("  Plan can now be written with full context budget available.")
+    print()
+    print("KEY DISTINCTION: Explore vs direct reading")
+    uses = [
+        ("Direct Read in main session", "Use for 1-3 specific files with known paths"),
+        ("Explore subagent", "Use for open-ended discovery: 'find all X', 'map module Y'"),
+    ]
+    for approach, when in uses:
+        print(f"  {approach:35s} — {when}")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -233,6 +298,12 @@ if __name__ == "__main__":
 
     print()
     print(sep)
+    print("DEMO 3: Explore subagent for verbose codebase discovery")
+    print(sep)
+    demo_explore_subagent()
+
+    print()
+    print(sep)
     print("KEY TAKEAWAYS:")
     print("  1. Plan mode triggers: multi-file, architectural decision,")
     print("     unknown scope, or user says 'plan first'.")
@@ -243,3 +314,5 @@ if __name__ == "__main__":
     print("     User reviews and approves BEFORE any code is written.")
     print("  5. In Claude Code: Enter plan mode → explore → write plan → ExitPlanMode.")
     print("     User sees the plan and must approve before implementation begins.")
+    print("  6. Explore subagent: spawn for open-ended discovery to protect the main")
+    print("     session's context window. Returns compact summary, not raw file content.")

@@ -95,6 +95,31 @@ RESOLVE_TOOL = {
     },
 }
 
+REQUEST_CLARIFICATION_TOOL = {
+    "name": "request_clarification",
+    "description": (
+        "Ask the customer for additional identifying information when multiple accounts "
+        "match their details. Use BEFORE escalating on multiple_matches. "
+        "Examples of identifiers to ask for: order number, email address, "
+        "phone number, billing address, last 4 digits of payment method."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "customer_message": {
+                "type": "string",
+                "description": "Polite question asking for additional identifier(s) to disambiguate accounts.",
+            },
+            "identifiers_requested": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Which identifiers you're asking for (email, order_number, phone, etc.).",
+            },
+        },
+        "required": ["customer_message", "identifiers_requested"],
+    },
+}
+
 
 # ---------------------------------------------------------------------------
 # System prompt with explicit criteria and few-shot examples
@@ -116,8 +141,10 @@ SYSTEM_WITH_EXPLICIT_CRITERIA = (
     + "  A: ESCALATE (policy_gap) — policy covers 30 days; 18 months is outside scope." + NL + NL
     + "  Q: 'Can you just get me a real person please?'" + NL
     + "  A: ESCALATE (human_requested) — always honor immediate human requests." + NL + NL
+    + "  Q: 'My name is John Smith, please look up my account'" + NL
+    + "  A: CLARIFY — multiple Johns found. Ask for email or order number to disambiguate." + NL + NL
     + "  Q: 'My account is showing two different email addresses'" + NL
-    + "  A: ESCALATE (multiple_matches) — potential account merge issue, needs human." + NL + NL
+    + "  A: ESCALATE (multiple_matches) — account merge issue needs human merge/dedup." + NL + NL
     + "  Q: 'Is this a good investment? Should I put money into your premium plan?'" + NL
     + "  A: ESCALATE (regulatory_domain) — investment advice is regulated."
 )
@@ -245,6 +272,52 @@ if __name__ == "__main__":
         print()
 
     print(sep)
+    print("DEMO 3: Multiple matches → clarify first, escalate only if unresolvable")
+    print(sep)
+    print()
+    system_clarify = (
+        "You are a customer support agent. When a customer lookup returns multiple "
+        "matching accounts, ask for an additional identifier to disambiguate." + NL
+        + "Use request_clarification to ask for: email address, order number, phone, "
+        "or last 4 digits of payment method. Only escalate if clarification still "
+        "leaves ambiguity." + NL
+        + "Use resolve_locally when you can complete the request."
+    )
+    # Scenario: customer gives their name, which matches two accounts
+    clarify_message = (
+        "Hi, I'm John Smith. I'd like a refund on my last order please."
+    )
+    print(f"Input: \"{clarify_message}\"")
+    print("  (Two accounts found matching 'John Smith')")
+    print()
+    resp = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=256,
+        system=system_clarify,
+        tools=[ESCALATE_TOOL, RESOLVE_TOOL, REQUEST_CLARIFICATION_TOOL],
+        messages=[{"role": "user", "content": clarify_message}],
+    )
+    for block in resp.content:
+        if block.type == "tool_use":
+            print(f"  Tool: {block.name}")
+            if block.name == "request_clarification":
+                ids = block.input.get("identifiers_requested", [])
+                msg = block.input.get("customer_message", "")
+                print(f"  Identifiers requested: {ids}")
+                print(f"  Message: {msg[:150]}")
+                print()
+                print("  CORRECT: asks for email/order number before escalating.")
+            elif block.name == "escalate_to_human":
+                trigger = block.input.get("trigger", "")
+                print(f"  Trigger: {trigger}")
+                print()
+                print("  ANTI-PATTERN: escalating without first asking for identifiers.")
+    print()
+    print("EXAM KEY: multiple_matches → request_clarification first.")
+    print("Only escalate if customer can't provide any disambiguating identifier.")
+
+    print()
+    print(sep)
     print("KEY TAKEAWAYS:")
     print("  1. Use OBJECTIVE, POLICY-BASED triggers:")
     print("     human_requested, policy_gap, multiple_matches,")
@@ -254,3 +327,5 @@ if __name__ == "__main__":
     print("  4. Few-shot examples in system prompt anchor Claude to correct decisions.")
     print("  5. Partial resolution + escalate: resolve what you can locally, then")
     print("     escalate only the part that requires human judgment.")
+    print("  6. Multiple matches → ask for additional identifier first (email, order")
+    print("     number, phone). Escalate only if clarification still leaves ambiguity.")

@@ -4,7 +4,7 @@ Domain 2 - Task 2.4: MCP Server Configuration & Scope
 EXAM CONCEPTS:
   1. .mcp.json location determines scope:
      Project-scoped  → <project-root>/.mcp.json  (shared with team via git)
-     User-scoped     → ~/.claude/mcp.json          (personal, not shared)
+     User-scoped     → ~/.claude.json            (personal, not shared)
 
   2. Environment variable expansion: ${VAR_NAME} in .mcp.json is
      substituted at runtime from the shell environment. Tokens should
@@ -74,7 +74,7 @@ def project_mcp_json() -> dict:
 
 def user_mcp_json() -> dict:
     """
-    User-scoped ~/.claude/mcp.json — personal servers, not committed to git.
+    User-scoped ~/.claude.json — personal servers, not committed to git.
     Contains personal tokens and tools irrelevant to other team members.
     """
     return {
@@ -259,7 +259,7 @@ def show_scope_decision() -> None:
     print("  - You want server config version-controlled with the code")
     print("  - Examples: project DB, project CI, project-specific APIs")
     print()
-    print("Use USER-SCOPED (~/.claude/mcp.json) when:")
+    print("Use USER-SCOPED (~/.claude.json) when:")
     print("  - The server is useful across ALL your projects")
     print("  - It contains personal credentials or personal data")
     print("  - Other team members don't need or want it")
@@ -327,9 +327,9 @@ if __name__ == "__main__":
 
     print()
     print(sep)
-    print("DEMO 2: User-scoped ~/.claude/mcp.json (personal)")
+    print("DEMO 2: User-scoped ~/.claude.json (personal)")
     print(sep)
-    print("File: ~/.claude/mcp.json")
+    print("File: ~/.claude.json")
     print(json.dumps(user_mcp_json(), indent=2))
 
     print()
@@ -376,7 +376,7 @@ if __name__ == "__main__":
     print(sep)
     print("KEY TAKEAWAYS:")
     print("  1. PROJECT-SCOPED .mcp.json → team tools, version-controlled.")
-    print("     USER-SCOPED ~/.claude/mcp.json → personal tools, not committed.")
+    print("     USER-SCOPED ~/.claude.json → personal tools, not committed.")
     print("  2. ALWAYS use ${ENV_VAR} for tokens. NEVER hard-code credentials.")
     print("  3. stdio spawns a subprocess; sse connects to a running HTTP server.")
     print("  4. TOOLS: Claude actively calls with arguments.")

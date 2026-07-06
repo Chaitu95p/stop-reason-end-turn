@@ -235,6 +235,57 @@ if __name__ == "__main__":
 
     print()
     print(sep)
+    print("DEMO 4: Content-type rendering — format output to match data type")
+    print(sep)
+    print()
+    print("EXAM CONCEPT: Different content types should be rendered differently.")
+    print("Presenting financial data as prose buries precision.")
+    print("Presenting news as a table strips narrative context.")
+    print()
+    render_examples = [
+        (
+            "Financial data (market share, revenue, growth %)",
+            "TABLE",
+            "| Vendor     | 2023 Market Share | YoY Growth |" + NL
+            + "| AWS        | 31%               | +12%       |" + NL
+            + "| Azure      | 25%               | +18%       |" + NL
+            + "| GCP        | 11%               | +22%       |",
+            "Numbers in tables are scannable and comparable; prose buries precision.",
+        ),
+        (
+            "News / event summaries",
+            "PROSE",
+            "AWS announced a $4B investment in AI infrastructure in Q3 2024,"
+            " citing strong enterprise demand for generative AI workloads.",
+            "News has narrative context (who, what, why, when) — tables strip this.",
+        ),
+        (
+            "Technical findings (bugs, security issues, API changes)",
+            "STRUCTURED LIST",
+            "Finding 1 [HIGH]: Unparameterized SQL in orders.py:45" + NL
+            + "  Source: CodeQL scan 2024-10-01" + NL
+            + "  Evidence: query = f\"SELECT * FROM orders WHERE id='{order_id}'\"",
+            "Structured lists give location, severity, and evidence in one scannable block.",
+        ),
+        (
+            "Conflicting statistics across credible sources",
+            "ANNOTATED TABLE",
+            "| Claim            | Source A (2022) | Source B (2024) | Resolution   |" + NL
+            + "| AI adoption rate | 31%             | 47%             | Present both |",
+            "Annotated tables show source, date, and conflict — preserve both values.",
+        ),
+    ]
+    for content_type, format_name, example, rationale in render_examples:
+        print(f"  Content type: {content_type}")
+        print(f"  Format:       {format_name}")
+        print(f"  Example:")
+        for line in example.split(NL):
+            print(f"    {line}")
+        print(f"  Why: {rationale}")
+        print()
+
+    print()
+    print(sep)
     print("KEY TAKEAWAYS:")
     print("  1. Every claim needs a source: document name + publication date + quote.")
     print("  2. Conflicting statistics: annotate BOTH with their source.")
@@ -245,3 +296,5 @@ if __name__ == "__main__":
     print("     gap (no source coverage). Aggregate claims hide which are unsupported.")
     print("  5. Anti-pattern: fabricated citations or attributed claims not in the source.")
     print("     Use verbatim quotes to prove the claim is actually in the source.")
+    print("  6. Render content types appropriately: financial data as tables, news as")
+    print("     prose, technical findings as structured lists, conflicts as annotated tables.")

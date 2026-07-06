@@ -244,6 +244,49 @@ def demo_crash_recovery() -> None:
 
 
 # ---------------------------------------------------------------------------
+# /compact pattern (Claude Code concept — simulated as a print demonstration)
+# ---------------------------------------------------------------------------
+def demo_compact_pattern() -> None:
+    sep = "-" * 50
+    print(sep)
+    print("/compact PATTERN: when and how to compact context")
+    print()
+    print("WHAT /compact does in Claude Code:")
+    print("  Replaces old conversation history with a summary.")
+    print("  Frees context budget so the session can continue longer.")
+    print("  Key details NOT in scratchpad will be LOST after compaction.")
+    print()
+    print("WHEN to use /compact:")
+    print("  - Context is approaching its limit during a long codebase exploration.")
+    print("  - You still have significant work remaining (more files to read).")
+    print("  - You have already written key findings to a scratchpad/file.")
+    print()
+    print("WRONG order (information loss):")
+    steps_wrong = [
+        "1. Read many files (findings only in conversation history)",
+        "2. Run /compact  <- LOSES specific findings (log paths, class names, limits)",
+        "3. Try to answer questions about those findings  <- VAGUE or hallucinated",
+    ]
+    for s in steps_wrong:
+        print(f"  {s}")
+    print()
+    print("CORRECT order (information preserved):")
+    steps_correct = [
+        "1. Read files AS YOU GO, write key findings to scratchpad file",
+        "2. Scratchpad has: RefundLimitError, $500, /var/log/billing/refunds.log, etc.",
+        "3. Run /compact  <- old messages summarized, but scratchpad is INTACT",
+        "4. Re-read scratchpad at the start of next reasoning step",
+        "5. Answer questions with full precision from scratchpad",
+    ]
+    for s in steps_correct:
+        print(f"  {s}")
+    print()
+    print("EXAM KEY: /compact compresses CONVERSATION HISTORY.")
+    print("  Scratchpad files are on disk — they survive compaction.")
+    print("  Agent writes to scratchpad BEFORE compaction, not after.")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -280,6 +323,12 @@ if __name__ == "__main__":
 
     print()
     print(sep)
+    print("DEMO 5: /compact pattern — when and how to compact context")
+    print(sep)
+    demo_compact_pattern()
+
+    print()
+    print(sep)
     print("KEY TAKEAWAYS:")
     print("  1. Context degradation: long sessions → compressed history → vague answers.")
     print("     Scratchpad file preserves specific findings across compressions.")
@@ -289,5 +338,5 @@ if __name__ == "__main__":
     print("     a compact result, protecting the coordinator's context window.")
     print("  4. Crash recovery: export manifest after each file processed.")
     print("     On restart, read manifest to skip completed work.")
-    print("  5. /compact in Claude Code: run BEFORE context fills, not after.")
-    print("     Key findings must be in scratchpad BEFORE compaction.")
+    print("  5. /compact compresses CONVERSATION HISTORY, not scratchpad files.")
+    print("     Always write key findings to scratchpad BEFORE running /compact.")

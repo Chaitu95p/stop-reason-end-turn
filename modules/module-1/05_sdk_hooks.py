@@ -5,7 +5,7 @@ EXAM CONCEPTS:
   1. PostToolUse hooks: intercept tool RESULTS before the model processes them.
      Use for data normalization (timestamps, status codes, formats).
 
-  2. PreToolCall hooks: intercept OUTGOING tool calls to enforce compliance rules.
+  2. PreToolUse hooks: intercept OUTGOING tool calls to enforce compliance rules.
      Use for blocking policy-violating actions.
 
   3. Hooks provide DETERMINISTIC guarantees -- prompt instructions give
@@ -17,7 +17,7 @@ EXAM CONCEPTS:
       - Numeric status codes → human-readable strings
       - Currency in different formats → normalized decimal
 
-    PreToolCall: policy enforcement
+    PreToolUse: policy enforcement
       - Block refunds > $500 → redirect to escalation workflow
 
   Mnemonic: HINT
@@ -108,7 +108,7 @@ def post_tool_use_normalization_hook(tool_name: str, raw_result: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# PreToolCall hook: policy enforcement (block + redirect)
+# PreToolUse hook: policy enforcement (block + redirect)
 # ---------------------------------------------------------------------------
 class PolicyViolation(Exception):
     def __init__(self, tool_name: str, reason: str, redirect_to: str):
@@ -118,16 +118,16 @@ class PolicyViolation(Exception):
         super().__init__(reason)
 
 
-def pre_tool_call_policy_hook(tool_name: str, tool_input: dict) -> dict:
+def pre_tool_use_policy_hook(tool_name: str, tool_input: dict) -> dict:
     """
-    EXAM CONCEPT: PreToolCall hook intercepts OUTGOING tool calls.
+    EXAM CONCEPT: PreToolUse hook intercepts OUTGOING tool calls.
     Blocks policy-violating actions and redirects to alternative workflows.
     Returns modified input (or raises PolicyViolation to block).
     """
     if tool_name == "process_refund":
         amount = tool_input.get("amount", 0)
         if amount > 500:
-            print(f"  [PreToolCall hook] BLOCKED: refund ${amount:.2f} exceeds $500 limit")
+            print(f"  [PreToolUse hook] BLOCKED: refund ${amount:.2f} exceeds $500 limit")
             raise PolicyViolation(
                 tool_name=tool_name,
                 reason=f"Refund amount ${amount:.2f} exceeds $500 policy limit",
@@ -135,7 +135,7 @@ def pre_tool_call_policy_hook(tool_name: str, tool_input: dict) -> dict:
             )
         elif amount > 250:
             # Allow but flag for audit
-            print(f"  [PreToolCall hook] FLAGGED: refund ${amount:.2f} requires approval (> $250)")
+            print(f"  [PreToolUse hook] FLAGGED: refund ${amount:.2f} requires approval (> $250)")
             tool_input["requires_approval"] = True
 
     return tool_input
@@ -180,9 +180,9 @@ def execute_tool_with_hooks(tool_name: str, tool_input: dict) -> dict:
     """Execute a tool with pre-call and post-result hooks applied."""
     # 1. Pre-call hook
     try:
-        tool_input = pre_tool_call_policy_hook(tool_name, tool_input)
+        tool_input = pre_tool_use_policy_hook(tool_name, tool_input)
     except PolicyViolation as pv:
-        print(f"  [PreToolCall hook] Redirecting to {pv.redirect_to}")
+        print(f"  [PreToolUse hook] Redirecting to {pv.redirect_to}")
         return {
             "error": pv.reason,
             "blocked": True,
@@ -253,17 +253,17 @@ if __name__ == "__main__":
 
     print()
     print(sep)
-    print("DEMO 2: PreToolCall policy hook (block refund > $500)")
+    print("DEMO 2: PreToolUse policy hook (block refund > $500)")
     print(sep)
     print("Attempting refund of $650...")
     try:
-        pre_tool_call_policy_hook("process_refund", {"order_id": "ORD-100", "amount": 650})
+        pre_tool_use_policy_hook("process_refund", {"order_id": "ORD-100", "amount": 650})
     except PolicyViolation as pv:
         print(f"  BLOCKED: {pv.reason} → redirect to {pv.redirect_to}")
 
     print()
     print("Attempting refund of $300 (between $250 and $500)...")
-    result = pre_tool_call_policy_hook("process_refund", {"order_id": "ORD-100", "amount": 300})
+    result = pre_tool_use_policy_hook("process_refund", {"order_id": "ORD-100", "amount": 300})
     print(f"  Allowed with flag: {result}")
 
     print()
@@ -279,7 +279,7 @@ if __name__ == "__main__":
     print(sep)
     print("KEY TAKEAWAYS:")
     print("  1. PostToolUse hooks normalize heterogeneous data BEFORE the model sees it.")
-    print("  2. PreToolCall hooks enforce policy by BLOCKING or MODIFYING outgoing calls.")
+    print("  2. PreToolUse hooks enforce policy by BLOCKING or MODIFYING outgoing calls.")
     print("  3. Hooks = DETERMINISTIC; prompt instructions = PROBABILISTIC compliance.")
     print("  4. Use hooks for business rules requiring GUARANTEED enforcement.")
     print("  Mnemonic HINT: Hook Intercepts, Normalizes, Transforms.")

@@ -293,10 +293,60 @@ if __name__ == "__main__":
 
     print()
     print(sep)
+    print("DEMO 6: Subagent local recovery with partial_result propagation")
+    print(sep)
+    print("EXAM CONCEPT: subagents handle transient failures locally.")
+    print("  Propagate only errors they CANNOT resolve + partial_result from")
+    print("  sources that DID succeed.")
+    print()
+
+    # Simulate a multi-source subagent: orders DB + inventory DB + shipping API
+    sources_attempted = ["orders_db", "inventory_db", "shipping_api"]
+    results_collected = []
+    errors_propagated = []
+
+    for source in sources_attempted:
+        if source == "shipping_api":
+            # Transient: retry once locally
+            print(f"  [{source}] First attempt → TIMEOUT (transient)")
+            print(f"  [{source}] Local retry #1...")
+            # Second attempt also fails (simulate persistent timeout)
+            error = make_error(
+                error_category="transient",
+                is_retryable=True,
+                error_code="TIMEOUT",
+                developer_message=f"{source} timed out after 5s on retry",
+                human_message="Shipping information temporarily unavailable.",
+                partial_result={"results_from_other_sources": results_collected},
+            )
+            errors_propagated.append(error)
+            print(f"  [{source}] Retry failed → propagating with partialResult")
+        else:
+            results_collected.append({"source": source, "status": "ok", "records": 3})
+            print(f"  [{source}] Success → {results_collected[-1]}")
+
+    print()
+    print("Subagent returns to coordinator:")
+    print(f"  Successful sources: {[r['source'] for r in results_collected]}")
+    print(f"  Failed (unresolvable): {len(errors_propagated)} error(s) with partialResult included")
+    if errors_propagated:
+        propagated = errors_propagated[0]
+        print(f"  Error propagated: {json.dumps({k: propagated[k] for k in ['isError','errorCategory','isRetryable','errorCode']})}")
+        partial = propagated.get("partialResult", {})
+        print(f"  partialResult: {partial}")
+    print()
+    print("Coordinator can now:")
+    print("  - Use the partial results from orders_db and inventory_db.")
+    print("  - Retry shipping_api or route to human with the partial data.")
+    print("  - NOT discard ALL data because ONE source failed (avoid all-or-nothing).")
+
+    print()
+    print(sep)
     print("KEY TAKEAWAYS:")
     print("  1. Four error categories: Transient (retry), Validation (fix input),")
     print("     Business (policy limit), Permission (escalate). Mnemonic: TVBP")
     print("  2. isRetryable=False prevents wasted retry attempts for non-fixable errors.")
     print("  3. Uniform errors block intelligent recovery -- always use structured errors.")
     print("  4. EMPTY result ≠ ACCESS FAILURE: distinguish using querySuccessful field.")
-    print("  5. Local recovery: subagents handle transient errors before propagating.")
+    print("  5. Local recovery: subagents retry transient failures LOCALLY before propagating.")
+    print("     Use partialResult to pass what DID succeed alongside the error.")
