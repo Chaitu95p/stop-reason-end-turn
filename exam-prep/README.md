@@ -23,10 +23,11 @@
 | File | What It Covers |
 |------|---------------|
 | `01_preparation_recommendations.md` | The 7 official recommendations from exam guide pages 36-37 (with how each maps to this repo) |
-| `02_exercises.md` | The 4 official hands-on exercises (steps 1-20) |
-| `03_scope_reference.md` | Complete in-scope and out-of-scope topic lists |
+| `02_exercises.md` | The 4 official prep exercises (steps 1-20) + 2 supplemental scenario exercises (5-6) |
+| `03_scope_reference.md` | Complete in-scope and out-of-scope topic lists, full appendix technologies |
 | `04_tips_and_tricks.md` | Anti-patterns, exam traps, mnemonics, and quick-win strategies |
 | `05_quick_reference_card.md` | Single-page cheat sheet — review the morning of the exam |
+| `06_sample_questions.md` | All 12 official sample questions with correct answers, full explanations, and distractor analysis |
 
 ---
 
@@ -62,9 +63,11 @@
 - Scratchpad files: externalize structured state for sessions exceeding context limits
 - Confidence scoring: field-level scores → stratified sampling → human review routing
 
-### Days 9 — Official Exercises
-- Work through `02_exercises.md` — all 4 exercises reinforce cross-domain judgment
+### Days 9 — Official Exercises + Sample Questions
+- Work through `02_exercises.md` — all 4 official exercises + 2 supplemental (exercises 5 & 6)
 - Focus on exercise 4 (multi-agent research pipeline) — highest complexity scenario
+- **Drill `06_sample_questions.md`** — all 12 official questions, time yourself to 2 min/question
+- Learn the distractor patterns table at the end — these recur across all 60 questions
 
 ### Day 10 — Final Review
 - Review `05_quick_reference_card.md` cover-to-cover

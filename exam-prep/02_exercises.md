@@ -1,8 +1,10 @@
 # Official Preparation Exercises
 
-> Source: CCA-F Exam Guide v0.2, section "Preparation Exercises" (steps 1-20)
+> Source: CCA-F Exam Guide v1, section "Preparation Exercises" (steps 1-20)
 
 These 4 exercises are the official hands-on tasks from the exam guide.
+Exercises 5 and 6 are supplemental — they cover the Developer Productivity and CI/CD exam scenarios
+that appear as scenario draws on the exam (not in the exam guide's Preparation Exercises section).
 Each is annotated with what to focus on and how to connect it to this repo.
 
 ---
@@ -220,3 +222,51 @@ task_prompt = f"Research claim #{claim_id}"  # subagent has no idea what claim_i
 > Source A (2023) reports X = 42%; Source B (2024) reports X = 38%. Sources disagree.
 > ```
 > **Not:** silently picking one value. The exam will test this specific behavior.
+
+---
+
+## Exercise 5: Developer Productivity with Claude Code (Supplemental)
+
+**Domains reinforced:** Domain 2 (Tool Design & MCP Integration), Domain 3 (Claude Code Config)
+
+**Exam scenario:** "Developer Productivity" — one of 6 scenarios the exam draws from. These steps build practical familiarity with built-in Claude Code tools, MCP integration patterns, and tool distribution scope decisions.
+
+**Repo reference:** `exercises/exercise-5-developer-productivity/`
+
+### Steps
+
+**Step 21** — Use each built-in Claude Code tool (Read, Write, Edit, Bash, Grep, Glob) in isolation and understand their selection criteria.
+
+> **Exam focus:** When do you use Grep vs Glob vs Bash? Grep = find content by pattern; Glob = find files by name/path; Bash = run commands. Read before Edit (Edit requires prior Read). Bash is the catch-all for shell-only operations.
+
+**Step 22** — Configure an MCP server (`.mcp.json`) with environment variable expansion and test that the tools appear in Claude Code's tool list. Add a personal server in `~/.claude.json` and verify both are available simultaneously.
+
+> **Exam focus:** `.mcp.json` = project scope (checked into repo). `~/.claude.json` = user scope (home root, single file). Both can be active at the same time.
+
+**Step 23** — Design a tool that is MCP-hosted (for cross-team sharing) and compare it with the same tool distributed as an in-prompt definition. Identify which distribution channel fits each use case.
+
+> **Exam focus:** MCP-hosted tools are centrally maintained and available to any Claude Code instance that connects to the server. In-prompt tool definitions are per-session and per-team. Choose MCP when the tool is infrastructure; in-prompt when the tool is workflow-specific.
+
+---
+
+## Exercise 6: CI/CD Pipeline Integration (Supplemental)
+
+**Domains reinforced:** Domain 3 (Claude Code Config), Domain 4 (Prompt Engineering & Structured Output)
+
+**Exam scenario:** "CI/CD Pipeline" — one of 6 scenarios the exam draws from. These steps cover non-interactive Claude Code usage, structured output for machine consumption, and multi-pass review design.
+
+**Repo reference:** `exercises/exercise-6-cicd-pipeline/`
+
+### Steps
+
+**Step 24** — Run Claude Code in non-interactive mode using `claude -p "..."` and capture structured JSON output with `--output-format json`. Verify the process exits after completing the task.
+
+> **Exam focus:** `-p` / `--print` flag = non-interactive mode. Without it, Claude Code waits for user input, causing CI jobs to hang indefinitely. This is Q10 in the sample questions.
+
+**Step 25** — Design a multi-pass code review: pass 1 reviews each file individually for local issues; pass 2 reviews cross-file data flow and integration. Compare output quality against a single-pass review of the same PR.
+
+> **Exam focus:** Single-pass reviews on large PRs produce attention dilution — inconsistent depth and contradictory feedback. Multi-pass ensures consistent per-file depth before integration analysis. Larger context windows do NOT fix this.
+
+**Step 26** — Add explicit review criteria (security checklist, performance antipatterns, API contract rules) to the review prompt and verify that false positive rates drop compared to open-ended "find issues" prompting.
+
+> **Exam focus:** Explicit criteria anchor the model to specific, verifiable checks rather than open-ended judgment. This reduces false positives and makes the review output actionable and consistent across runs.

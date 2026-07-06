@@ -2,7 +2,7 @@
 
 Runnable Python demos and Claude Code config examples for the **Claude Certified Architect – Foundations (CCA-F)** exam.
 
-Each **module** maps to one exam domain. Each **exercise** works through one of the four Preparation Exercises in the CCA-F Exam Guide (pages 31-34).
+Each **module** maps to one exam domain. Each **exercise** works through one of the official Preparation Exercises in the CCA-F Exam Guide (pages 31-34), plus two supplemental exercises for the Developer Productivity and CI/CD exam scenarios.
 
 ## Layout
 
@@ -19,7 +19,9 @@ Each **module** maps to one exam domain. Each **exercise** works through one of 
 │   ├── exercise-1-multi-tool-agent/       ← Prep Exercise 1: agent + escalation
 │   ├── exercise-2-team-workflow/          ← Prep Exercise 2: Claude Code config (no Python)
 │   ├── exercise-3-extraction-pipeline/    ← Prep Exercise 3: structured extraction
-│   └── exercise-4-multi-agent-research/   ← Prep Exercise 4: multi-agent research
+│   ├── exercise-4-multi-agent-research/   ← Prep Exercise 4: multi-agent research
+│   ├── exercise-5-developer-productivity/ ← Supplemental: Exam Scenario 4 (built-in tools, MCP)
+│   └── exercise-6-cicd-pipeline/          ← Supplemental: Exam Scenario 5 (CI/CD, multi-pass review)
 │
 ├── mcp-explorer/          ← FastMCP SDK deep-dive (11 runnable scripts + tests)
 ├── exam-prep/             ← CCA-F study guide, tips & tricks, quick-reference card
@@ -114,12 +116,13 @@ Run any script with `uv run python <script>` from `mcp-explorer/`, or run all te
 |------|---------|
 | `README.md` | Master study guide + 10-day study plan |
 | `01_preparation_recommendations.md` | All 7 official recommendations, annotated |
-| `02_exercises.md` | All 4 official prep exercises with exam focus notes |
-| `03_scope_reference.md` | In-scope and out-of-scope topic list |
+| `02_exercises.md` | All 4 official prep exercises + 2 supplemental (steps 21-26) |
+| `03_scope_reference.md` | In-scope/out-of-scope lists + full appendix technologies |
 | `04_tips_and_tricks.md` | Mnemonics, anti-patterns, day-of-exam strategy |
 | `05_quick_reference_card.md` | Canonical code patterns from memory |
+| `06_sample_questions.md` | All 12 official sample Q&As with distractor analysis |
 
-The authoritative exam guide is `CCA-F Latest Exam+Guide v1.pdf` in this repo. The domain weightings and Preparation Exercises 1-4 come directly from it.
+The authoritative exam guide is `CCA-F Latest Exam+Guide v1.pdf` in this repo. All content in `exam-prep/` is sourced directly from it.
 
 ## Tests
 
