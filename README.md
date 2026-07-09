@@ -39,8 +39,11 @@ Prerequisites: [`uv`](https://docs.astral.sh/uv/) and Python 3.12+.
 git clone <this repo>
 cd stop-reason-end-turn
 
-# One sync at the root sets up the shared .venv for every module and exercise
-uv sync
+# Sync all workspace member dependencies into the shared .venv.
+# --all-packages is required so that member-specific deps (e.g. fastmcp,
+# pydantic, pytest) are installed alongside the root package deps.
+# Plain `uv sync` only installs the root package and will miss them.
+uv sync --all-packages
 
 # Set your API key
 export ANTHROPIC_API_KEY=sk-ant-...
